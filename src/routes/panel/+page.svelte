@@ -8,7 +8,7 @@
     import Modal from '$root/components/Modal.svelte';
     import ModificarCarta from '$root/components/Modificar.Carta.svelte';
     import { getImageUrl } from '$root/services/utils';
-    import { showAlertSwalHtmlDecision, showToastSwal } from '$root/services/mi.swal';
+    import { paramsSwalAlert, showAlertSwalHtmlDecision, showToastSwal } from '$root/services/mi.swal';
     import  imgBot  from '$root/static/images/001-robot.png';
     import { bubble } from 'svelte/internal';
 
@@ -59,8 +59,7 @@
         }
     }
 
-    socket.on('message', (data) => {
-            console.log(data);
+    socket.on('message', (data) => {            
             respondeSocket = data;
     }) 
 
@@ -77,8 +76,7 @@
         }, 70000);
     })
 
-    socket.on('session_init', (value) => {
-        console.log('session_init,', value);
+    socket.on('session_init', (value) => {        
         session_ini.value = value   
         sessionInciada = value     
         session_ini.message = value ? 'Session iniciada' : 'Vincule su whatsapp escaneando el codigo QR'    
@@ -89,7 +87,7 @@
         isPreloadShow = false;  
         infoSede = getValueTokenSys('sede');
         
-        console.log('infoSede',infoSede);
+        // console.log('infoSede',infoSede);
         await getAllData()
         // await getCostosDelivery()
     })
@@ -132,8 +130,7 @@
         
         sedeApi.metodo_pago_aceptados_chatbot = idtipoPago_Sede.join(',')
         _metodo_pago_aceptados_chatbot = sedeApi.metodo_pago_aceptados_chatbot
-        
-        console.log('_idtp_sede', idtipoPago_Sede);
+                
         listTiposPago = listTiposPago.map(x => {
             idtipoPago_Sede.map(y => {
                 if (x.idtipo_pago.toString() === y.toString()) {
@@ -150,8 +147,7 @@
         const _confgDelivery = await getData('', `get-config-delivery/${sedeApi.idsede}`)
         configDelivery = _confgDelivery[0]
         parametrosCostoDelivery = configDelivery.parametros
-        console.log('_confgDelivery', configDelivery);
-        console.log('configDelivery', parametrosCostoDelivery);
+        
     }
 
     
@@ -160,8 +156,7 @@
         
         await getCartegorias()
 
-        const _listCanales = await getData('', `canales/${infoSede.idsede_restobar}`)
-        console.log('_listCanales', _listCanales);
+        const _listCanales = await getData('', `canales/${infoSede.idsede_restobar}`)        
         // listCanales = _listCanales
         listCanales = _listCanales.map(x => {
             x.checked = x.habilitado_chatbot === '1'
@@ -175,7 +170,7 @@
 
         sedeApi = await getData('', `get-sede/${infoSede.idsede_restobar}`)
         sedeApi = sedeApi[0]
-        console.log('sedeApi', sedeApi);
+        
 
         loadTipoPago()
 
@@ -197,9 +192,9 @@
     }
 
 
-    function initSocket() {
-        console.log('aaaaa');        
-    }
+    // function initSocket() {
+    //     console.log('aaaaa');        
+    // }
 
     function updateDataBot() {
         const _data = cocinarDataSend();
@@ -207,25 +202,45 @@
         showToastSwal('success', 'Se actualizo correctamente', 3000)
     }
 
+    function test() {
+        let paramsSwal = paramsSwalAlert; 
+        paramsSwal.title = 'Esta seguro de detener el chat bot? 🤖'        
+        paramsSwal.content = `Al cerrar se detendra el chat bot y se cerraran todas las conversaciones automatizadas`
+        paramsSwal.confirmButtonText = 'Si, Detener'
+        showAlertSwalHtmlDecision(paramsSwal) 
+
+
+        // const _params = {
+        //     title: 'Esta seguro de detener el chat bot?',
+        //     content: 'Se detendra el chat bot y se cerraran todas las conversaciones automatizadas',
+        //     confirmButtonText: 'Si, Detener'
+        // }
+        
+    }
+
     async function stopBot() {
 
         // preguntar si esta seguro de detener el chat bot
         
-        const _params = {
-            title: 'Esta seguro de detener el chat bot?',
-            content: 'Se detendra el chat bot y se cerraran todas las conversaciones automatizadas',
-            confirmButtonText: 'Si, Detener'
+        let paramsSwal = paramsSwalAlert; 
+        paramsSwal.title = 'Esta seguro de detener el chat bot? 🤖'        
+        paramsSwal.content = `Al cerrar se detendra el chat bot y se cerraran todas las conversaciones automatizadas`
+        paramsSwal.confirmButtonText = 'Si, Detener'
+        const rpt = await showAlertSwalHtmlDecision(paramsSwal) 
+
+        if (rpt.isConfirmed) {
+            iniciandoSession = false
+    
+            socket.sendMessage('stop-chat-bot', nom_session)
+            sessionInciada = false;
+            sessionVerify = false
+    
+            // cerrar socket
+            socket.disconnect()        
+    
+            showToastSwal('success', 'Se detuvo correctamente', 3000)
         }
-        const rpt = await showAlertSwalHtmlDecision(_params) 
-        console.log('rpt', rpt);
-
-        iniciandoSession = false
-
-        socket.sendMessage('stop-chat-bot', nom_session)
-        sessionInciada = false;
-        sessionVerify = false
-
-        showToastSwal('success', 'Se detuvo correctamente', 3000)
+        
     }
 
     function cocinarDataSend() {
@@ -239,8 +254,7 @@
         const _listCartaPasar = listCarta.filter(x => x.visible_cliente === '1' && x.img_visible === true)
 
         // solo horarios de atencion que esten habilitados
-        const _listHorariosAtencionPasar = listHorariosAtencion.filter(x => x.visible_cliente === '1' && (x.url_carta !== '' || x.url_carta !== null))
-        console.log('_listHorariosAtencionPasar', _listHorariosAtencionPasar);
+        const _listHorariosAtencionPasar = listHorariosAtencion.filter(x => x.visible_cliente === '1' && (x.url_carta !== '' || x.url_carta !== null))        
 
         // solo le pasaremos los canales de consumo que esten habilitados
         const _listCanalesPasar = listCanales.filter(x => x.checked === true)
@@ -266,8 +280,7 @@
             }
         }
         
-
-        console.log('_data', _data);
+        
         return _data
     }
 
@@ -281,7 +294,13 @@
         if (_data) {
             iniciandoSession =  true
             session_ini.scanqr = false
-            socket.sendMessage('init_bot', _data)
+            if ( !socket.isConnected() ) {
+                socket.connect()
+            }
+
+            setTimeout(() => {            
+                socket.sendMessage('init_bot', _data)
+            }, 1000);
         }
     }
 
@@ -291,8 +310,7 @@
         showModalCarta = true
     }
 
-    async function checkedCanalConsumo(item) {        
-        // console.log(event.target.checked);
+    async function checkedCanalConsumo(item) {                
         const _dataSend = {            
             habilitado_chatbot: item.checked ? '0' : '1'
         }
@@ -302,8 +320,7 @@
     }
 
     async function checkTipoPagoSeleted(e: any) {
-        let idtp = e.target.value;        
-        console.log('idtp', idtp);
+        let idtp = e.target.value;                
         if (e.target.checked) {
             _metodo_pago_aceptados_chatbot += ','+idtp + ',';
         } else {
@@ -580,7 +597,6 @@
 
         <!-- el chat bot -->
         <section class="column2 w-full p-4 text-center">
-
             <section>
 
                 <div style="display: flex; justify-content: center;">
@@ -659,8 +675,9 @@
 
         </section>
         
-
+        
     </section>
+    
     
 
 

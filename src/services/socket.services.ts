@@ -44,6 +44,16 @@ export class SocketClient {
         SocketClient.instance = null;
     }
 
+    // function verifica si esta conectado
+    public isConnected(): boolean {
+        return this.socket.connected;
+    }
+
+    // conecta al socket
+    public connect() {
+        this.socket.connect();
+    }
+
     public on(event: string, callback: EventCallback) {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, []);
