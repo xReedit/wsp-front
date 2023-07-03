@@ -9,6 +9,7 @@
     export let itemCarta: any = {}
     let _loaderStatus = 0
     let urlImage = ''
+    let imgCartaVisible = false;
     let s3ImageUploader = new S3ImageUploader();
     let isCategoriaHabilitada = false;
 
@@ -27,11 +28,15 @@
     ]
 
     // cuando se carga el componente
-    onMount(() => {
+    onMount(() => {        
         diasTrabaja = itemCarta.dia_disponible
-        if ( itemCarta.url_carta !== '' ) {
+        if ( itemCarta.url_carta !== 'null' && itemCarta.url_carta !== null && itemCarta.url_carta !== '' && itemCarta.url_carta !== undefined) {
+            imgCartaVisible = true
             urlImage = s3ImageUploader.getImageUrl(itemCarta.url_carta)        
         }      
+
+        // console.log('itemCarta.url_carta', itemCarta.url_carta);
+        // console.log('imgCartaVisible',imgCartaVisible);
         
         isCategoriaHabilitada = itemCarta.visible_cliente === '1'
         marcarDias();
@@ -152,7 +157,7 @@
                     <p class="fs-10 text-gray-500">Imagen que se compartirá con los clientes</p>
                 </div>
                 <div>
-                    <img hidden={urlImage === ''} src={urlImage} alt="img-carta" width="30px">
+                    <img hidden={!imgCartaVisible} src={urlImage} alt="img-carta" width="30px">
                 </div>
             </div>
 

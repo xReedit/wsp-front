@@ -87,7 +87,9 @@
         isPreloadShow = false;  
         infoSede = getValueTokenSys('sede');
         
-        // console.log('infoSede',infoSede);
+        console.log('infoSede',infoSede);
+        infoSede.idsede_restobar = '1'
+        // infoSede.idorg = 1
         await getAllData()
         // await getCostosDelivery()
     })
@@ -153,6 +155,11 @@
     
 
     async function getAllData() {
+        console.log('infoSede', infoSede);
+        sedeApi = await getData('', `get-sede/${infoSede.idsede_restobar}`)
+        sedeApi = sedeApi[0]
+        console.log('sedeApi', sedeApi);
+
         
         await getCartegorias()
 
@@ -168,8 +175,7 @@
         // listCanales.push({idtipo_consumo: 0, descripcion: 'RESERVAR', estado: 1})       
                 
 
-        sedeApi = await getData('', `get-sede/${infoSede.idsede_restobar}`)
-        sedeApi = sedeApi[0]
+        
         
 
         loadTipoPago()
