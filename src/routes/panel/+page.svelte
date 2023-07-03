@@ -445,7 +445,7 @@
     <section class="grid-container">
         <section class="column1">
             <h4>Chat Bot - {infoSede.nombre}</h4>
-            <p class="text-sm text-gray-500">El chat bot es una herramienta que permite a los clientes realizar pedidos de manera rápida y sencilla.</p>
+            <p class="text-sm text-gray-500">El chatbot automatiza la atención al cliente por WhatsApp, ofreciendo respuestas rápidas y precisas las 24/7, mejorando la experiencia del cliente y optimizando el servicio.</p>
             <br>                        
 
             <!-- cartas, dias y horario de atencion, subir imagen o pdf de la carta -->
