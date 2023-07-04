@@ -87,8 +87,8 @@
         isPreloadShow = false;  
         infoSede = getValueTokenSys('sede');
         
-        console.log('infoSede',infoSede);
-        infoSede.idsede_restobar = '1'
+        // console.log('infoSede',infoSede);
+        // infoSede.idsede_restobar = '1'
         // infoSede.idorg = 1
         await getAllData()
         // await getCostosDelivery()
@@ -286,6 +286,7 @@
             }
         }
         
+        console.log('_data', _data);
         
         return _data
     }
