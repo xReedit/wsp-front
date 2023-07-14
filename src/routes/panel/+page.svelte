@@ -268,7 +268,7 @@
         // solo le pasaremos los tipos de pago que esten habilitados
         const _listTiposPagoPasar = listTiposPago.filter(x => x.checked === true)                
 
-        nom_session = `${sedeApi.idsede}${sedeApi.idorg}-session`
+        nom_session = `${sedeApi.idorg}-${sedeApi.idsede}-session-01`
         // return
 
         const _data = {
