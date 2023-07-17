@@ -205,6 +205,7 @@
         try {            
             if (configDelivery.ciudades === '') {
                 ciudadAtiende = `${sedeApi.ciudad} ${sedeApi.codigo_postal}`
+                configDelivery.ciudades = ciudadAtiende;
             } 
         } catch (error) {
             
