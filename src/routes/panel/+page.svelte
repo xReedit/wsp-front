@@ -7,7 +7,7 @@
     import { SocketClient } from '$root/services/socket.services';
     import Modal from '$root/components/Modal.svelte';
     import ModificarCarta from '$root/components/Modificar.Carta.svelte';
-    import { getImageUrl } from '$root/services/utils';
+    import { copiarAlPortapapeles, getImageUrl } from '$root/services/utils';
     import { paramsSwalAlert, showAlertSwalHtmlDecision, showToastSwal } from '$root/services/mi.swal';
     import  imgBot  from '$root/static/images/001-robot.png';
     import { bubble } from 'svelte/internal';
@@ -35,6 +35,7 @@
     let sessionInciada = false
     let sessionVerify = false
     let iniciandoSession = false
+    let ciudadAtiende = ''
     
 
     let respondeSocket = ''
@@ -95,8 +96,11 @@
     })
 
     async function getCartegorias() {
+        console.log('infoSede.idsede_restobar', infoSede.idsede_restobar);
         const _listHorarios = await getData('', `horarios/${infoSede.idsede_restobar}`)
         listCarta = _listHorarios;
+
+        console.log('listCarta', listCarta);
 
         listCarta.map(x => {
             const _urlCarta = x.url_carta || ''
@@ -149,6 +153,8 @@
         const _confgDelivery = await getData('', `get-config-delivery/${sedeApi.idsede}`)
         configDelivery = _confgDelivery[0]
         parametrosCostoDelivery = configDelivery.parametros
+
+        
         
     }
 
@@ -195,6 +201,14 @@
         // seccion que mas piden, para recomendar
         listSeccionMasPiden = await getData('', `get-seccion-mas-piden/${sedeApi.idsede}`)
         listSeccionMasPiden = listSeccionMasPiden;
+        
+        try {            
+            if (configDelivery.ciudades === '') {
+                ciudadAtiende = `${sedeApi.ciudad} ${sedeApi.codigo_postal}`
+            } 
+        } catch (error) {
+            
+        }
     }
 
 
@@ -400,6 +414,12 @@
             return false
         }
 
+        // verificar si tiene link de la carta
+        if (sedeApi.link_carta === null || sedeApi.link_carta === '') {
+            showToastSwal('warning', 'Debe tener el link de la carta configurado', 3000)
+            return false
+        }
+
         return true
     }
     
@@ -537,6 +557,7 @@
                             </tr>
                         {/each}
                     </tbody>
+                </table>
             </section>
 
             <!-- configuracion del costo de entraga y ciudades que atiendo -->
@@ -597,7 +618,21 @@
 
                 
 
-            </section>                           
+            </section>  
+            
+            
+            <!-- link tienda virtual -->
+            <br>            
+            <section class="card-1">
+                <h4>Link Tienda Virtual</h4>
+                <p class="text-sm text-gray-500">El chatbot tendrá varios intentos para entender el pedido del cliente, sino lo consigue lo enviará a su tienda en línea</p>
+                <div class="relative">
+                    <input type="text" readonly value="https://express.papaya.com.pe/carta/{sedeApi.link_carta}">
+                    <div class="absolute flex right-1 top-0.5">
+                        <button class="btn btn-sm btn-secondary" on:click={() => copiarAlPortapapeles(`https://express.papaya.com.pe/carta/${sedeApi.link_carta}`)}><i class="fa fa-copy"></i></button>                        
+                    </div>
+                </div>
+            </section>
 
         </section>
 

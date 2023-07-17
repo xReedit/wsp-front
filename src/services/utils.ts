@@ -1,4 +1,5 @@
 import {PUBLIC_URL_VIEW_BUCKET} from '$env/static/public'
+import { showToastSwal } from './mi.swal'
 
 export const inputConMayusculas = (field: any) => { 
     field.target.value = field.target.value.toUpperCase()
@@ -80,3 +81,8 @@ export function imprimirHTML(html: string): void {
 export function getImageUrl(fileName: string): string {
     return `${PUBLIC_URL_VIEW_BUCKET}${fileName}`;
 } 
+
+export function copiarAlPortapapeles(texto: string): Promise<void> {
+    showToastSwal('success', 'Link tienda virtual copiado.')
+    return navigator.clipboard.writeText(texto);    
+}
