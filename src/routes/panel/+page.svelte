@@ -36,6 +36,7 @@
     let sessionVerify = false
     let iniciandoSession = false
     let ciudadAtiende = ''
+    let userBot: any = {}
     
 
     let respondeSocket = ''
@@ -158,6 +159,11 @@
         
     }
 
+    async function getUserBot() {
+        const _userBot = await getData('', `get-user-bot/${sedeApi.idsede}`)
+        userBot = _userBot[0]  
+    }
+
     
 
     async function getAllData() {
@@ -188,6 +194,8 @@
 
         getCostosDelivery()
 
+        getUserBot()
+
         // impresoras
         listImpresoras = await getData('', `get-impresoras/13`)  
         listImpresoras = listImpresoras
@@ -204,7 +212,7 @@
         
         try {            
             if (configDelivery.ciudades === '') {
-                ciudadAtiende = `${sedeApi.ciudad} ${sedeApi.codigo_postal}`
+                ciudadAtiende = `${sedeApi.ciudad.toLowerCase()} ${sedeApi.codigo_postal}`
                 configDelivery.ciudades = ciudadAtiende;
             } 
         } catch (error) {
@@ -285,6 +293,9 @@
 
         nom_session = `${sedeApi.idorg}-${sedeApi.idsede}-session-01`
         // return
+
+        // el idusuario es el id del bot
+        sedeApi.idusuario = userBot.idusuario
 
         const _data = {
             nameSession: nom_session,  //`session-${Math.floor(Math.random() * 1000)}`
@@ -404,7 +415,12 @@
         }
 
         // verificar que la ciudad este configurada
-        if (configDelivery.ciudades === '') {
+        if ( configDelivery.ciudades ) {
+            if (!configDelivery.ciudades || configDelivery.ciudades === '' || configDelivery.ciudades === null || configDelivery.ciudades === undefined) {
+                showToastSwal('warning', 'Debe tener al menos una ciudad configurada', 3000)
+                return false
+            }
+        } else {
             showToastSwal('warning', 'Debe tener al menos una ciudad configurada', 3000)
             return false
         }

@@ -12,7 +12,7 @@
 
     onMount(async () => {            
       const rpt = await loginRestobarBot(user)            
-      if (rpt.status === 200) {
+      if (rpt.status === 200) {          
             const { token } = await rpt.json();
             localStorage.setItem('token', token);
             goto(`./panel`) // opciones
