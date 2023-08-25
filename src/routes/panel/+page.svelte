@@ -197,7 +197,7 @@
         getUserBot()
 
         // impresoras
-        listImpresoras = await getData('', `get-impresoras/13`)  
+        listImpresoras = await getData('', `get-impresoras/${infoSede.idsede_restobar}`)  
         listImpresoras = listImpresoras
 
         // obtener horarios y dias de atencion
