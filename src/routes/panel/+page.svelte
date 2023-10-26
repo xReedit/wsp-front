@@ -288,6 +288,14 @@
         // solo le pasaremos los canales de consumo que esten habilitados
         const _listCanalesPasar = listCanales.filter(x => x.checked === true)
 
+        // si la descripcion es "para llevar" que lo cambia a: "Recoger"
+        _listCanalesPasar.map(x => {
+            if (x.descripcion.toUpperCase() === 'PARA LLEVAR') {
+                x.descripcion = 'RECOGER'
+            }
+        })
+        
+
         // solo le pasaremos los tipos de pago que esten habilitados
         const _listTiposPagoPasar = listTiposPago.filter(x => x.checked === true)                
 
