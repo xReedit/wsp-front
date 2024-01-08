@@ -10,7 +10,6 @@
     import { copiarAlPortapapeles, getImageUrl } from '$root/services/utils';
     import { paramsSwalAlert, showAlertSwalHtmlDecision, showToastSwal } from '$root/services/mi.swal';
     import  imgBot  from '$root/static/images/001-robot.png';
-    import { bubble } from 'svelte/internal';
 
 
     let imagenBot = imgBot

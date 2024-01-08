@@ -3,14 +3,22 @@ import { PUBLIC_API_KEY, PUBLIC_CONTROLER, PUBLIC_URL_API_PEDIDO } from '$env/st
 // const PUBLIC_API_KEY = PUBLIC_API_KEY
 
 // export function get apirest
-export const getData = async (controller: string, event: string, payload: any = null) => {
+export const getData = async (controller: string, event: string, payload: any = null, withToken = true) => {
     controller = controller === '' ? PUBLIC_CONTROLER : controller
     const url = `${PUBLIC_API_KEY}/${controller}/${event}`
+     
 
-    const token = localStorage.getItem('token')
-    const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+    let headers = {};
+    if ( withToken ) {
+        const token = localStorage.getItem('token')   
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    } else {
+        headers = {
+            'Content-Type': 'application/json'
+        }
     }
 
     let response;
@@ -31,13 +39,23 @@ export const getData = async (controller: string, event: string, payload: any = 
 }
 
 // export function post apirest
-export const postData = async (controller: string, event: string, payload: any) => {
+export const postData = async (controller: string, event: string, payload: any, withToken: boolean = true) => {
     controller = controller === '' ? PUBLIC_CONTROLER : controller
     const url = `${PUBLIC_API_KEY}/${controller}/${event}`
-    const token = localStorage.getItem('token')
-    const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+    
+
+    // si viene con token
+    let headers = {};
+    if ( withToken ) {
+        const token = localStorage.getItem('token')
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    } else {
+        headers = {
+            'Content-Type': 'application/json'
+        }
     }
 
     return await fetch(url, {
@@ -65,14 +83,26 @@ export const postDataJSON = async (controller: string, event: string, payload: a
 }
 
 // export function put apirest
-export const putData = async (controller: string, event: string, payload: any = null) => {
+export const putData = async (controller: string, event: string, payload: any = null, withToken = true) => {
     controller = controller === '' ? PUBLIC_CONTROLER : controller
     const url = `${PUBLIC_API_KEY}/${controller}/${event}`
-    const token = localStorage.getItem('token')
-    const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+    
+
+    let headers = {};
+    if ( withToken ) {
+        const token = localStorage.getItem('token')
+         headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    } else {
+        headers = {
+            'Content-Type': 'application/json'
+        }
     }
+
+
+    
     return await fetch(url, {
         method: 'PUT',
         headers,
@@ -81,8 +111,9 @@ export const putData = async (controller: string, event: string, payload: any = 
 }
 
 // export function post apirest
-export const postDataPedidoBot = async (controller: string, event: string, payload: any) => {    
+export const postDataPedidoBot = async (controller: string, event: string, payload: any, withToken = false) => {    
     const url = `${PUBLIC_URL_API_PEDIDO}/${controller}/${event}`
+    
     const token = localStorage.getItem('token')
     const headers = {
         'Content-Type': 'application/json',
@@ -95,3 +126,31 @@ export const postDataPedidoBot = async (controller: string, event: string, paylo
         body: JSON.stringify(payload)
     })
 }
+
+export const postDataSolicitudPermiso = async (controller: string, event: string, payload: any, withToken = false) => {    
+    const url = `${PUBLIC_URL_API_PEDIDO}/${controller}/${event}`
+
+    let headers = {};
+    if ( withToken ) {
+        const token = localStorage.getItem('token')
+         headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    } else {
+        headers = {
+            'Content-Type': 'application/json'
+        }
+    }
+
+
+    return await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+    })
+}
+
+
+// export function post apirest
+

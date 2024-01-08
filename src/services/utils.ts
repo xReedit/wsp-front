@@ -86,3 +86,28 @@ export function copiarAlPortapapeles(texto: string): Promise<void> {
     showToastSwal('success', 'Link tienda virtual copiado.')
     return navigator.clipboard.writeText(texto);    
 }
+
+// funcion que transforma un string de fecha ejemplo: '2023-11-20' a sabado 11 de noviembre del 2023 
+export function getFechaLarga(fecha: string): string {
+    const _fecha = new Date(fecha)
+    const _dia = _fecha.getDate()
+    const _mes = _fecha.getMonth()
+    const _anio = _fecha.getFullYear().toString().substr(-2)
+    const _diaSemana = _fecha.getDay()
+    const _diaSemanaNombre = getDiaSemana(_diaSemana)
+    const _mesNombre = getMes(_mes)
+ 
+    // año solo los 2 ultimos digitos    
+    
+    return `${_diaSemanaNombre} ${_dia} ${_mesNombre} ${_anio}`
+}
+
+function getDiaSemana(dia: number): string {
+    const _listDia = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab']
+    return _listDia[dia]
+}
+
+function getMes(mes: number): string {
+    const _listMes = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Set', 'Oct', 'Nov', 'Dic']
+    return _listMes[mes]
+}
