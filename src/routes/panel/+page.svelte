@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { getValueTokenSys, isLogin } from '$root/services/login.services'    
+    import { getValueTokenSys } from '$root/services/login.services'    
     import { fade } from 'svelte/transition'
     import Preload from '$root/components/Preload.svelte';
     import { getData, putData } from '$root/services/httpClient.services';
@@ -10,7 +10,7 @@
     import { copiarAlPortapapeles, getImageUrl } from '$root/services/utils';
     import { paramsSwalAlert, showAlertSwalHtmlDecision, showToastSwal } from '$root/services/mi.swal';
     import  imgBot  from '$root/static/images/001-robot.png';
-    import beep from '$root/static/sounds/beep.mp3';
+    import beep from '$root/static/sound/beep.mp3';
     import { getCountPedidosBot } from '$root/services/api.restobar';
 
 
