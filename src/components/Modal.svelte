@@ -8,7 +8,7 @@
 </script>
 
 {#if open}
-<div in:fade={{ duration: 180, easing: cubicInOut }} out:fade={{ duration: 100 }} class="modal z-50 fixed w-full h-full top-0 left-0 flex items-center justify-center p-8 lg:p-0" role="dialog" >
+<div in:fade|global={{ duration: 180, easing: cubicInOut }} out:fade|global={{ duration: 100 }} class="modal z-50 fixed w-full h-full top-0 left-0 flex items-center justify-center p-8 lg:p-0" role="dialog" >
     <div class="modal-overlay fixed w-full h-full bg-gray-900 opacity-50"></div>
     <div class="bg-white lg:h-max mx-auto rounded-lg shadow-xl z-50 overflow-y-auto">
       <div class="flex justify-between items-center head bg-gray-100 py-2 px-5 text-normal font-medium">

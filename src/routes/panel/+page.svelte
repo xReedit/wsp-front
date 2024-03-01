@@ -10,6 +10,8 @@
     import { copiarAlPortapapeles, getImageUrl } from '$root/services/utils';
     import { paramsSwalAlert, showAlertSwalHtmlDecision, showToastSwal } from '$root/services/mi.swal';
     import  imgBot  from '$root/static/images/001-robot.png';
+    import beep from '$root/static/sounds/beep.mp3';
+    import { getCountPedidosBot } from '$root/services/api.restobar';
 
 
     let imagenBot = imgBot
@@ -36,6 +38,8 @@
     let iniciandoSession = false
     let ciudadAtiende = ''
     let userBot: any = {}
+    let isShowCostoFijo = false;
+    let countPedidosRealizadosBot = 0
     
 
     let respondeSocket = ''
@@ -48,7 +52,7 @@
 
     let sedeApi: any = {}
     
-    const socket = SocketClient.getInstance();
+    
 
     let showModalCarta = false
     let cartaModificarSeleted: any
@@ -56,10 +60,12 @@
     function handleToggleModalCarta() {
         showModalCarta = !showModalCarta
         if (!showModalCarta) {
-            getCartegorias()
+            getCartegorias()            
         }
     }
 
+    const socket = SocketClient.getInstance();
+    
     socket.on('message', (data) => {            
             respondeSocket = data;
     }) 
@@ -83,24 +89,24 @@
         session_ini.message = value ? 'Session iniciada' : 'Vincule su whatsapp escaneando el codigo QR'    
     })
 
+    socket.on('pedidoRealizado', async (value) => {
+        this.countPedidosRealizadosBot = await getCountPedidosBot(infoSede)
+        // emitir un sonido beep
+        const audio = new Audio(beep);
+        audio.play();                
+    })
+
     onMount(async () => {        
         // await isLogin()
         isPreloadShow = false;  
         infoSede = getValueTokenSys('sede');
         
-        // console.log('infoSede',infoSede);
-        // infoSede.idsede_restobar = '1'
-        // infoSede.idorg = 1
         await getAllData()
-        // await getCostosDelivery()
     })
 
-    async function getCartegorias() {
-        console.log('infoSede.idsede_restobar', infoSede.idsede_restobar);
+    async function getCartegorias() {        
         const _listHorarios = await getData('', `horarios/${infoSede.idsede_restobar}`)
-        listCarta = _listHorarios;
-
-        console.log('listCarta', listCarta);
+        listCarta = _listHorarios;        
 
         listCarta.map(x => {
             const _urlCarta = x.url_carta || ''
@@ -149,13 +155,13 @@
     }
 
     async function getCostosDelivery() {
-        // obtener la configuracion de delivery de la sede
-        const _confgDelivery = await getData('', `get-config-delivery/${sedeApi.idsede}`)
+        // obtener la configuracion de delivery de la sede        
+        const _confgDelivery = await getData('', `get-config-delivery/${sedeApi.idsede}`)        
         configDelivery = _confgDelivery[0]
-        parametrosCostoDelivery = configDelivery.parametros
-
+        parametrosCostoDelivery = configDelivery.parametros      
         
-        
+        isShowCostoFijo = parametrosCostoDelivery.obtener_coordenadas_del_cliente === 'NO' ? true : false   
+        // parametrosCostoDelivery.costo_fijo = parametrosCostoDelivery.costo_fijo || 0
     }
 
     async function getUserBot() {
@@ -165,12 +171,9 @@
 
     
 
-    async function getAllData() {
-        console.log('infoSede', infoSede);
+    async function getAllData() {        
         sedeApi = await getData('', `get-sede/${infoSede.idsede_restobar}`)
-        sedeApi = sedeApi[0]
-        console.log('sedeApi', sedeApi);
-
+        sedeApi = sedeApi[0]        
         
         await getCartegorias()
 
@@ -217,12 +220,9 @@
         } catch (error) {
             
         }
+
+        
     }
-
-
-    // function initSocket() {
-    //     console.log('aaaaa');        
-    // }
 
     function updateDataBot() {
         const _data = cocinarDataSend();
@@ -301,6 +301,16 @@
         nom_session = `${sedeApi.idorg}-${sedeApi.idsede}-session-01`
         // return
 
+        const _paramtrosSedeDelivery = {
+            obtener_coordenadas_del_cliente: 'SI',
+            coordenadas_sede: {
+                latitude: sedeApi.latitude,
+                longitude: sedeApi.longitude
+            },
+            ciudades_disponible: configDelivery.ciudades,
+            distancia_maxima_en_kilometros: parametrosCostoDelivery.km_limite
+        }
+
         // el idusuario es el id del bot
         sedeApi.idusuario = userBot.idusuario
 
@@ -315,7 +325,8 @@
                 listImpresoras: listImpresoras,
                 listHorariosAtencion: _listCartaPasar,
                 listReglasCarta: listReglasCarta,
-                listSeccionMasPiden: listSeccionMasPiden
+                listSeccionMasPiden: listSeccionMasPiden,
+                parametrosSedeDelivery: _paramtrosSedeDelivery
             }
         }
         
@@ -446,6 +457,14 @@
 
         return true
     }
+
+    function onChangeCosto(e) {        
+        isShowCostoFijo = !isShowCostoFijo
+
+        parametrosCostoDelivery.costo_fijo = isShowCostoFijo ? parametrosCostoDelivery.costo_fijo : 0
+        parametrosCostoDelivery.obtener_coordenadas_del_cliente = isShowCostoFijo ? 'NO' : 'SI'
+        guardarCambiosDelivery()
+    }
     
 
 </script>
@@ -484,7 +503,7 @@
 
 </style>
 
-<div in:fade class="m-auto p-5">    
+<div in:fade|global class="m-auto p-5">    
     <Preload isLoading = {isPreloadShow}/>
 
     <section class="grid-container">
@@ -566,7 +585,7 @@
             <section class="card-1">
                 <h4>Metodo de Pagos</h4>
                 <p class="text-sm text-gray-500">Seleccione los metodos de pago aceptados</p>                
-                <table class="w-100 fs-12">
+                <table class="w-100 fs-12 mt-2">
                     <thead>
                         <th>Metodo de Pago</th>
                         <th align="center">Habilitado</th>
@@ -588,59 +607,101 @@
             <br> 
             <section class="card-1">
                 <h4>Costo de entrega -Delivery-</h4>
-                <p class="text-sm text-gray-500">El costo de entrega se calcula según a la distancia. Las variables son las siguientes:</p>
-                <table class="w-100 fs-12">
-                    <thead>
-                        <th>Variable</th>
-                        <th align="center" style="width: 70px;">Valor</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <p>Kilometros Base</p>
-                                <p class="fs-10 text-gray-500">Kilometros a la redonda que se cobrara el costo básico</p>
-                            </td>
-                            <td>
-                                <input type="number" bind:value="{parametrosCostoDelivery.km_base}" on:change="{guardarCambiosDelivery}">
-                            </td>
-                            <!-- <td align="center">{configDelivery.parametros.km_base}</td> -->
-                        </tr>
-                        <tr>
-                            <td>
-                                <p>Costo Básico</p>
-                                <p class="fs-10 text-gray-500">Costo básico que se cobrara si esta dentro de <strong>Kilometros Base</strong></p>
-                            </td>
-                            <td>
-                                <input type="number" bind:value="{parametrosCostoDelivery.km_base_costo}" on:change="{guardarCambiosDelivery}">
-                            </td>
-                        </tr>                        
-                        <tr>
-                            <td>
-                                <p>Costo por kilometro adicional</p>
-                                <p class="fs-10 text-gray-500">Si la distancia pasa de <strong>Kilometros Base</strong> a la redonda, cuanto se cobrara por kilometro adicional.</p>
-                            </td>
-                            <td>
-                                <input type="number" bind:value={parametrosCostoDelivery.km_adicional_costo} on:change="{guardarCambiosDelivery}">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <p>Distancia Limite</p>
-                                <p class="fs-10 text-gray-500">Distancia limite en Kilometros a la redonda.</p>
-                            </td>
-                            <td>
-                                <input type="number" bind:value={parametrosCostoDelivery.km_limite} on:change="{guardarCambiosDelivery}">
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            
+                <div class="flex items-center mb-2 mt-2">
+                    <div class="flex items-center mr-4">
+                        <input id="default-radio-1" checked={!isShowCostoFijo} type="radio" on:change={onChangeCosto} value="" name="default-radio" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                        <label for="default-radio-1" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Costo Variable</label>                                                
+                    </div>
+                    <div class="flex items-center">
+                        <input id="default-radio-2" checked={isShowCostoFijo} type="radio" on:change={onChangeCosto} value="" name="default-radio" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                        <label for="default-radio-2" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Costo Fijo</label>                        
+                    </div>
+                </div>
+                <hr>
                 <br>
-                <h4>Ciudades que atiende -Delivery-</h4>
-                <p class="text-sm text-gray-500 mb-2">Para encontrar la direccion que el cliente proporciona, se requiere la ciudad y el codigo postal, separadas por comas. <strong>Ejemplo: Magadalena del Mar 15086, Jesús María 15072</strong></p>                                
-                <input type="text" bind:value={configDelivery.ciudades} on:blur="{guardarCambiosDelivery}">
-                <p class="mt-3 text-sm text-gray-500">Puede encontrar el codigo postal de su ciudad <a href="http://www.codigopostal.gob.pe/pages/invitado/consulta.jsf" target="_blank"><span class="text-blue-500 font-bold">Aqui</span></a></p>                
 
-                
+                <!-- costo fijo -->
+                {#if isShowCostoFijo}
+                <div>
+                    <p class="text-sm text-gray-500">El costo de entrega será el mismo sin importar la distancia:</p>
+                    <table class="w-100 fs-12 mt-2">
+                        <thead>
+                            <th></th>
+                            <th align="center" style="width: 70px;">Importe</th>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p class="font-bold">Costo Fijo</p>
+                                    <p class="fs-11 text-gray-500">Costo fijo que se cobrara por la entrega</p>
+                                </td>
+                                <td>
+                                    <input type="number" bind:value={parametrosCostoDelivery.costo_fijo} on:change="{guardarCambiosDelivery}">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>                    
+                                                                
+                </div>
+
+                {:else}
+                <!-- costo variable -->
+                <div>
+                    <p class="text-sm text-gray-500">El costo de entrega se calcula según a la distancia. Las variables son las siguientes:</p>
+                    <table class="w-100 fs-12 mt-2">
+                        <thead>
+                            <th>Variable</th>
+                            <th align="center" style="width: 70px;">Valor</th>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p class="font-bold">Kilometros Base</p>
+                                    <p class="fs-11 text-gray-500">Kilometros a la redonda que se cobrara el costo básico</p>
+                                </td>
+                                <td>
+                                    <input type="number" bind:value="{parametrosCostoDelivery.km_base}" on:change="{guardarCambiosDelivery}">
+                                </td>
+                                <!-- <td align="center">{configDelivery.parametros.km_base}</td> -->
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="font-bold">Costo Básico</p>
+                                    <p class="fs-11 text-gray-500">Costo básico que se cobrara si esta dentro de <strong>Kilometros Base</strong></p>
+                                </td>
+                                <td>
+                                    <input type="number" bind:value="{parametrosCostoDelivery.km_base_costo}" on:change="{guardarCambiosDelivery}">
+                                </td>
+                            </tr>                        
+                            <tr>
+                                <td>
+                                    <p class="font-bold">Costo por kilometro adicional</p>
+                                    <p class="fs-11 text-gray-500">Si la distancia pasa de <strong>Kilometros Base</strong> a la redonda, cuanto se cobrara por kilometro adicional.</p>
+                                </td>
+                                <td>
+                                    <input type="number" bind:value={parametrosCostoDelivery.km_adicional_costo} on:change="{guardarCambiosDelivery}">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="font-bold">Distancia Limite</p>
+                                    <p class="fs-11 text-gray-500">Distancia limite en Kilometros a la redonda.</p>
+                                </td>
+                                <td>
+                                    <input type="number" bind:value={parametrosCostoDelivery.km_limite} on:change="{guardarCambiosDelivery}">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                    <h4>Ciudades que atiende -Delivery-</h4>
+                    <p class="text-sm text-gray-500 mb-2">Para encontrar la direccion que el cliente proporciona, se requiere la ciudad y el codigo postal de la ciudades o zonas que esta disponible el servicio, separadas por comas. <strong>Ejemplo: Magadalena del Mar 15086, Jesús María 15072</strong></p>                                
+                    <input type="text" bind:value={configDelivery.ciudades} on:blur="{guardarCambiosDelivery}">
+                    <p class="mt-3 text-sm text-gray-500">Puede encontrar el codigo postal de su ciudad <a href="http://www.codigopostal.gob.pe/pages/invitado/consulta.jsf" target="_blank"><span class="text-blue-500 font-bold">Aqui</span></a></p>                
+                </div>
+
+                {/if}
 
             </section>  
             
@@ -736,7 +797,11 @@
                 </div>
             {/if}
             
-
+            {#if countPedidosRealizadosBot > 0}
+                <div class="bg-green-100 rounded-lg p-3 mt-5 ml-3">
+                    <p>Pedidos confirmados por el chat bot: <span class="font-bold fs-20">{countPedidosRealizadosBot}</span></p>
+                </div>
+            {/if}
 
 
         </section>
