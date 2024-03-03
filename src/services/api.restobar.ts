@@ -4,5 +4,5 @@ const EVENTO = 'chat-bot'
 
 
 export const getCountPedidosBot = async (infoSede: any) => {
-    const rpt = await getData(EVENTO, `count-pedidos-bot/${infoSede.idsede_restobar}`)    
+    return await getData('', `count-pedidos-bot/${infoSede.idsede_restobar}`)    
 }

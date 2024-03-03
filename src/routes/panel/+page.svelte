@@ -62,7 +62,7 @@
         if (!showModalCarta) {
             getCartegorias()            
         }
-    }
+    }    
 
     const socket = SocketClient.getInstance();
     
@@ -89,9 +89,10 @@
         session_ini.message = value ? 'Session iniciada' : 'Vincule su whatsapp escaneando el codigo QR'    
     })
 
-    socket.on('pedidoRealizado', async (value) => {
-        this.countPedidosRealizadosBot = await getCountPedidosBot(infoSede)
-        // emitir un sonido beep
+    socket.on('pedidoRealizado', async () => {        
+        const rptCountPedidos: any = await getCountPedidosBot(infoSede)
+        countPedidosRealizadosBot = rptCountPedidos.count;
+      
         const audio = new Audio(beep);
         audio.play();                
     })
@@ -505,7 +506,7 @@
 
 <div in:fade|global class="m-auto p-5">    
     <Preload isLoading = {isPreloadShow}/>
-
+    <button on:click={btonCountPedidosBot}>AAA</button>
     <section class="grid-container">
         <section class="column1">
             <h4>Chat Bot - {infoSede.nombre}</h4>

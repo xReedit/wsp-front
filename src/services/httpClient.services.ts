@@ -5,7 +5,7 @@ import { PUBLIC_API_KEY, PUBLIC_CONTROLER, PUBLIC_URL_API_PEDIDO } from '$env/st
 // export function get apirest
 export const getData = async (controller: string, event: string, payload: any = null, withToken = true) => {
     controller = controller === '' ? PUBLIC_CONTROLER : controller
-    const url = `${PUBLIC_API_KEY}/${controller}/${event}`
+    const url = `${PUBLIC_API_KEY}/${controller}/${event}`    
      
 
     let headers = {};
