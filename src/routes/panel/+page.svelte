@@ -505,8 +505,7 @@
 </style>
 
 <div in:fade|global class="m-auto p-5">    
-    <Preload isLoading = {isPreloadShow}/>
-    <button on:click={btonCountPedidosBot}>AAA</button>
+    <Preload isLoading = {isPreloadShow}/>    
     <section class="grid-container">
         <section class="column1">
             <h4>Chat Bot - {infoSede.nombre}</h4>
