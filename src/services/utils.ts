@@ -99,7 +99,7 @@ export function getFechaLarga(fecha: string): string {
  
     // año solo los 2 ultimos digitos    
     
-    return `${_diaSemanaNombre} ${_dia} ${_mesNombre} ${_anio}`
+    return `${_dia} ${_mesNombre} ${_anio}`
 }
 
 function getDiaSemana(dia: number): string {
@@ -111,3 +111,13 @@ function getMes(mes: number): string {
     const _listMes = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Set', 'Oct', 'Nov', 'Dic']
     return _listMes[mes]
 }
+
+export function formatearFecha(fechaISO) {
+    const fecha = new Date(fechaISO);
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0'); // Los meses son 0-indexados
+    const anio = String(fecha.getFullYear()).slice(-2);
+    const hora = String(fecha.getHours()).padStart(2, '0');
+    const minutos = String(fecha.getMinutes()).padStart(2, '0');
+    return `${dia}/${mes}/${anio} ${hora}:${minutos}`;
+  }

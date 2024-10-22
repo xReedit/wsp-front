@@ -11,7 +11,9 @@
     import { paramsSwalAlert, showAlertSwalHtmlDecision, showToastSwal } from '$root/services/mi.swal';
     import  imgBot  from '$root/static/images/001-robot.png';
     import beep from '$root/static/sound/beep.mp3';
-    import { getCountPedidosBot } from '$root/services/api.restobar';
+    import { bloquearNumeroTelefono, desbloquearNumeroTelefono, getCountPedidosBot } from '$root/services/api.restobar';
+
+    import NumberHandler from '$root/components/Number.Handler.svelte';
 
 
     let imagenBot = imgBot
@@ -56,6 +58,7 @@
 
     let showModalCarta = false
     let cartaModificarSeleted: any
+    let newConversation = {}
 
     function handleToggleModalCarta() {
         showModalCarta = !showModalCarta
@@ -63,6 +66,25 @@
             getCartegorias()            
         }
     }    
+
+    function generateNewConversationTest() {
+        let list = [
+            {
+                id: 1,
+                telefono: '51934746830',
+                push_name: 'AAAAA',
+                request_human_attention: false
+            },
+            {
+                id: 2,
+                telefono: '51934746831',
+                push_name: 'BBBB',
+                request_human_attention: false
+            }
+        ]
+
+        newConversation = list[Math.floor(Math.random() * list.length)]
+    }
 
     const socket = SocketClient.getInstance();
     
@@ -95,6 +117,12 @@
       
         const audio = new Audio(beep);
         audio.play();                
+    })
+
+    socket.on('newConversation', async (data) => {        
+        console.log('newConversation', data);
+        newConversation = data;
+        
     })
 
     onMount(async () => {        
@@ -466,6 +494,16 @@
         parametrosCostoDelivery.obtener_coordenadas_del_cliente = isShowCostoFijo ? 'NO' : 'SI'
         guardarCambiosDelivery()
     }
+
+    function handleBloquearTelefono(event) {
+        console.log('Número bloqueado:', event.detail);
+        bloquearNumeroTelefono(infoSede.idsede_restobar, event.detail.telefono, event.detail.bloqueado);
+    }
+
+    function handleDesBloquearTelefono(event) {
+        console.log('Número DESbloqueado:', event.detail.telefono);
+        desbloquearNumeroTelefono(infoSede.idsede_restobar, event.detail.telefono);
+    }
     
 
 </script>
@@ -611,11 +649,11 @@
                 <div class="flex items-center mb-2 mt-2">
                     <div class="flex items-center mr-4">
                         <input id="default-radio-1" checked={!isShowCostoFijo} type="radio" on:change={onChangeCosto} value="" name="default-radio" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                        <label for="default-radio-1" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Costo Variable</label>                                                
+                        <label for="default-radio-1" class="ms-2 text-sm font-medium text-gray-900">Costo Variable</label>                                                
                     </div>
                     <div class="flex items-center">
                         <input id="default-radio-2" checked={isShowCostoFijo} type="radio" on:change={onChangeCosto} value="" name="default-radio" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                        <label for="default-radio-2" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Costo Fijo</label>                        
+                        <label for="default-radio-2" class="ms-2 text-sm font-medium text-gray-900">Costo Fijo</label>                        
                     </div>
                 </div>
                 <hr>
@@ -751,6 +789,7 @@
                                 <h4>Consejos antes de empezar</h4>
                                 <p class="fs-12 text-gray-600">Optimize su carta, verifique que, los nombres de los platos esten sin fallas ortograficas y que no se repitan. Al menos una carta debe estar habilitada y con una imagen para poder compartir.</p>
                             </div>
+                            <br>
                         </div>
                     {/if}
                 {/if}
@@ -802,6 +841,22 @@
                     <p>Pedidos confirmados por el chat bot: <span class="font-bold fs-20">{countPedidosRealizadosBot}</span></p>
                 </div>
             {/if}
+
+
+            <br>
+            <hr>
+            <br>
+            <!-- manejador de numeros -->
+            <section class="card-1 ml-3">
+                <p class="text-bold text-xl mb-2">Interacciones</p>
+                <hr>
+                <NumberHandler 
+                idsede={infoSede.idsede_restobar}
+                new_conversacion={newConversation}
+                on:bloquear-telefono={handleBloquearTelefono}
+                on:desbloquear-telefono={handleDesBloquearTelefono}
+                ></NumberHandler>
+            </section>
 
 
         </section>

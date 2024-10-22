@@ -1,9 +1,24 @@
 <script>
+    import { setMode, mode } from "mode-watcher";
     import "../app.css";
     import '$root/js/all.min.js';
     // import '$root/styles/aa.css';
     import '$root/styles/micss.css';
     import Toolbar from '$root/components/Toolbar.svelte'
+
+    // let mode = 'light';
+    setMode('light');
+    console.log('dark ==== >');
+
+    function handleModeChange() {
+      if ($mode === "light") {
+        setMode("dark");
+      } else {
+        setMode("light");
+      }
+      console.log('mode', $mode);
+
+	  }
 
 </script>
 
@@ -15,7 +30,7 @@
 
 <Toolbar />
 
-<main>
+<main>  
     <div class="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">      
       <div class="px-4 py-6 sm:px-0">
         <div class="h-full rounded-lg border-2 border-gray-200 bg-white">
