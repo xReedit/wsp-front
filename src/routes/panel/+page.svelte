@@ -580,7 +580,7 @@
                                 <td>
                                     {#if item.img_visible}                                        
                                         <a href="{getImageUrl(item.url_carta)}" class="cursor-pointer" target= '_blank'>🖼️</a>
-                                    {:else if !item.img_visible}                                        
+                                    a{:else if !item.img_visible}                                        
                                         <p>🚫</p>
                                     {/if }                                    
                                 </td>
