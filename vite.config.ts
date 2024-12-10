@@ -8,7 +8,14 @@ const config: UserConfig = {
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}']
 	},
-	define: { 'process.env': {} }
+	define: { 'process.env': {} },
+	build: {
+        terserOptions: {
+            compress: {
+                drop_console: true
+            }
+        }
+    }
 };
 
 export default config;

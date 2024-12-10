@@ -28,6 +28,7 @@
 		"@googlemaps/google-maps-services-js": "^3.3.32",
 		"@types/natural": "^5.1.2",
 		"compressorjs": "^1.2.1",
+		"date-fns": "^4.1.0",
 		"dotenv": "^16.1.4",
 		"front-piter-chat-bot": "file:",
 		"fuse.js": "^6.6.2",

@@ -1,4 +1,5 @@
 import {PUBLIC_URL_VIEW_BUCKET} from '$env/static/public'
+import { parseISO } from 'date-fns'
 import { showToastSwal } from './mi.swal'
 
 export const inputConMayusculas = (field: any) => { 
@@ -88,18 +89,16 @@ export function copiarAlPortapapeles(texto: string): Promise<void> {
 }
 
 // funcion que transforma un string de fecha ejemplo: '2023-11-20' a sabado 11 de noviembre del 2023 
-export function getFechaLarga(fecha: string): string {
-    const _fecha = new Date(fecha)
-    const _dia = _fecha.getDate()
-    const _mes = _fecha.getMonth()
-    const _anio = _fecha.getFullYear().toString().substr(-2)
-    const _diaSemana = _fecha.getDay()
-    const _diaSemanaNombre = getDiaSemana(_diaSemana)
-    const _mesNombre = getMes(_mes)
- 
-    // año solo los 2 ultimos digitos    
-    
-    return `${_dia} ${_mesNombre} ${_anio}`
+export function getFechaLarga(fecha: string): string {    
+    console.log('fecha', fecha);
+    // const _fecha = new Date(fecha);
+    const _fecha = parseISO(fecha);
+    console.log('_fecha', _fecha);
+    const _dia = _fecha.getDate();
+    const _mes = _fecha.getMonth();    
+    const _mesNombre = getMes(_mes-1);
+
+    return `${_dia} ${_mesNombre}`;
 }
 
 function getDiaSemana(dia: number): string {
