@@ -9,11 +9,25 @@
     
 
 
+
     
     let countSolicitudes = 0;
     let titulo = 'Solicitudes por atender';
     let listSolicitudes = []
-    let link = $page.url.searchParams.get('key')     
+    
+    // Obtener y validar el parámetro key de la URL
+    let rawKey = $page.url.searchParams.get('key')
+    let link = rawKey
+    
+    // Verificar si el key contiene una URL duplicada
+    if (rawKey && rawKey.includes('chatbot.papaya.com.pe/solicitud-remoto?key=')) {
+        // Extraer el valor real del key (el último valor después del último '=')
+        const keyParts = rawKey.split('key=')
+        if (keyParts.length > 1) {
+            link = keyParts[keyParts.length - 1]
+            console.log('Se corrigió un key duplicado:', link)
+        }
+    }
     onMount(async () => {
         const rpt = await getData('permiso-remoto', `permisos/${link}`, null, false)        
         if ( rpt.success ) {
