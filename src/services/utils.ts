@@ -91,12 +91,18 @@ export function copiarAlPortapapeles(texto: string): Promise<void> {
 // funcion que transforma un string de fecha ejemplo: '2023-11-20' a sabado 11 de noviembre del 2023 
 export function getFechaLarga(fecha: string): string {    
     console.log('fecha', fecha);
-    // const _fecha = new Date(fecha);
-    const _fecha = parseISO(fecha);
-    console.log('_fecha', _fecha);
+    
+    // Asegurarse de que la fecha se interprete en la zona horaria local
+    // Formato esperado: YYYY-MM-DD
+    const [year, month, day] = fecha.split('-').map(num => parseInt(num, 10));
+    
+    // Crear fecha con año, mes (0-11) y día
+    const _fecha = new Date(year, month - 1, day);
+    console.log('_fecha procesada', _fecha);
+    
     const _dia = _fecha.getDate();
-    const _mes = _fecha.getMonth();    
-    const _mesNombre = getMes(_mes-1);
+    const _mes = _fecha.getMonth(); // getMonth() ya devuelve 0-11
+    const _mesNombre = getMes(_mes);
 
     return `${_dia} ${_mesNombre}`;
 }
