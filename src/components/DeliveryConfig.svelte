@@ -2,6 +2,7 @@
     import { putData } from '$root/services/httpClient.services';
     import { showToastSwal } from '$root/services/mi.swal';
     import type { ConfigDelivery, ParametrosCostoDelivery } from '$root/types';
+    import CityAutocomplete from './CityAutocomplete.svelte';
 
     export let configDelivery: ConfigDelivery;
     export let parametrosCostoDelivery: ParametrosCostoDelivery;
@@ -113,9 +114,8 @@
         </table>
         <br>
         <h4>Ciudades que atiende -Delivery-</h4>
-        <p class="text-sm text-gray-500 mb-2">Para encontrar la direccion que el cliente proporciona, se requiere la ciudad y el codigo postal de la ciudades o zonas que esta disponible el servicio, separadas por comas. <strong>Ejemplo: Magadalena del Mar 15086, Jesús María 15072</strong></p>                                
-        <input type="text" bind:value={configDelivery.ciudades} on:blur="{guardarCambiosDelivery}">
-        <p class="mt-3 text-sm text-gray-500">Puede encontrar el codigo postal de su ciudad <a href="http://www.codigopostal.gob.pe/pages/invitado/consulta.jsf" target="_blank"><span class="text-blue-500 font-bold">Aqui</span></a></p>                
+        <p class="text-sm text-gray-500 mb-2">Busque y seleccione las ciudades o distritos donde está disponible el servicio de delivery. El código postal se agrega automáticamente.</p>
+        <CityAutocomplete bind:ciudades={configDelivery.ciudades} on:change={guardarCambiosDelivery} />                
     </div>
 
     {/if}
