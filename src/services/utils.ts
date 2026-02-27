@@ -62,7 +62,7 @@ export function getNomPerido(periodo): string {
 
 
 function getNomMes(mm): string {
-    const _listMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    const _listMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre']
     return _listMes[mm - 1]
 }
 
@@ -90,16 +90,12 @@ export function copiarAlPortapapeles(texto: string): Promise<void> {
 
 // funcion que transforma un string de fecha ejemplo: '2023-11-20' a sabado 11 de noviembre del 2023 
 export function getFechaLarga(fecha: string): string {    
-    console.log('fecha', fecha);
-    
     // Asegurarse de que la fecha se interprete en la zona horaria local
     // Formato esperado: YYYY-MM-DD
     const [year, month, day] = fecha.split('-').map(num => parseInt(num, 10));
     
     // Crear fecha con año, mes (0-11) y día
     const _fecha = new Date(year, month - 1, day);
-    console.log('_fecha procesada', _fecha);
-    
     const _dia = _fecha.getDate();
     const _mes = _fecha.getMonth(); // getMonth() ya devuelve 0-11
     const _mesNombre = getMes(_mes);
@@ -113,7 +109,7 @@ function getDiaSemana(dia: number): string {
 }
 
 function getMes(mes: number): string {
-    const _listMes = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Set', 'Oct', 'Nov', 'Dic']
+    const _listMes = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic']
     return _listMes[mes]
 }
 

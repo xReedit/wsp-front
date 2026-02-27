@@ -4,93 +4,62 @@
     import { createEventDispatcher, onMount } from "svelte";
     import Button from "./Button.svelte";
     import { showToastSwal } from "$root/services/mi.swal";
-    import { get } from "svelte/store";
+    import type { Carta } from "$root/types";
 
-    export let itemCarta: any = {}
+    export let itemCarta: Carta = {} as Carta
     let _loaderStatus = 0
     let urlImage = ''
     let imgCartaVisible = false;
     let s3ImageUploader = new S3ImageUploader();
     let isCategoriaHabilitada = false;
+    let fileInput: FileList | undefined;
 
     const dispatch = createEventDispatcher()
 
-    let diasTrabaja = '';
-
-    let dias_semana = [ 
-        {numdia: 1, nomdia: 'Domingo'},
-        {numdia: 2, nomdia: 'Lunes'},
-        {numdia: 3, nomdia: 'Martes'},
-        {numdia: 4, nomdia: 'Miercoles'},
-        {numdia: 5, nomdia: 'Jueves'},
-        {numdia: 6, nomdia: 'Viernes'},
-        {numdia: 7, nomdia: 'Sabado'},
-    ]
-
     // cuando se carga el componente
     onMount(() => {        
-        diasTrabaja = itemCarta.dia_disponible
         if ( itemCarta.url_carta !== 'null' && itemCarta.url_carta !== null && itemCarta.url_carta !== '' && itemCarta.url_carta !== undefined) {
             imgCartaVisible = true
             urlImage = s3ImageUploader.getImageUrl(itemCarta.url_carta)        
         }      
-
-        // console.log('itemCarta.url_carta', itemCarta.url_carta);
-        // console.log('imgCartaVisible',imgCartaVisible);
         
         isCategoriaHabilitada = itemCarta.visible_cliente === '1'
-        marcarDias();
     });
-    
-
-    // function que chequea los dias que trabaja el restaurante
-    function checkDiaList(e: any) {
-        let dia = e.target.value;
-        itemCarta.dia_disponible
-        if (e.target.checked) {
-            diasTrabaja += dia + ',';
-        } else {
-            diasTrabaja = diasTrabaja.replace(dia, '');
-        }
-        itemCarta.dia_disponible = diasTrabaja;        
-    }
-
-    // marcar los dias que trabaja el restaurante
-    function marcarDias() {
-        let dias = itemCarta.dia_disponible.split(',');
-        dias.forEach(dia => {
-            let check = document.getElementById('checkdia'+dia);
-            if (check) {
-                check.checked = true;
-            }
-        });
-    }
 
     // funcion que sube la imagen al repositorio utilizando la clase S3ImageUploader
     async function subirImagen() {        
-        let img_carta = document.getElementById('img_carta');  
-        const fileData = img_carta.files[0] || null;
+        const fileData = fileInput?.[0] || null;
         if ( fileData ) {
             const _nomCarta = itemCarta.descripcion.toLowerCase().trim().replace(/ /g, '_');
             const fileName = `${itemCarta.idsede}${itemCarta.idorg}_${_nomCarta}.jpg`;  
                         
             itemCarta.url_carta = fileName;
-            await s3ImageUploader.uploadImage(fileName, fileData);
+            try {
+                await s3ImageUploader.uploadImage(fileName, fileData);
+            } catch (error) {
+                showToastSwal('error', 'Error al subir la imagen', 3000)
+            }
         }
     }    
 
-    // guarmaos los datos de la carta
+    // guardamos los datos de la carta
     async function guardarCarta() {        
         _loaderStatus = 1
-        await subirImagen()
+        try {
+            await subirImagen()
 
-        delete itemCarta.nom_dias
-        delete itemCarta.img_visible
-        
-        const rpt = await putData('chat-bot',`update-carta/${itemCarta.idcategoria}`, itemCarta)        
-        
-        showToastSwal('success','Se guardo correctamente')
-        dispatch('close')
+            delete itemCarta.nom_dias
+            delete itemCarta.img_visible
+            
+            await putData('chat-bot',`update-carta/${itemCarta.idcategoria}`, itemCarta)        
+            
+            showToastSwal('success','Se guardo correctamente')
+            dispatch('close')
+        } catch (error) {
+            showToastSwal('error', 'Error al guardar la carta', 3000)
+        } finally {
+            _loaderStatus = 0
+        }
     }
 
 
@@ -106,49 +75,20 @@
         <div>
             <h3>{itemCarta.descripcion}</h3>
         </div>
-        <div>
-            {#if isCategoriaHabilitada}
-                <p on:click={habilitarCategoria} class="badge primary fs-10 cursor-pointer">Habilitada</p>                
-            {:else}
-                <p on:click={habilitarCategoria} class="badge danger fs-10 cursor-pointer">Deshabilitada</p>
-            {/if}
+        <div class="flex items-center gap-2">
+            <span class="text-xs {isCategoriaHabilitada ? 'text-green-600' : 'text-red-500'}">
+                {isCategoriaHabilitada ? 'Habilitada' : 'Deshabilitada'}
+            </span>
+            <label class="toggle-switch">
+                <input type="checkbox" bind:checked={isCategoriaHabilitada} on:change={() => itemCarta.visible_cliente = isCategoriaHabilitada ? '1' : '0'}>
+                <span class="toggle-slider"></span>
+            </label>            
         </div>
     </div>
     <p hidden={isCategoriaHabilitada} class="fs-10 text-red-500">Esta carta NO esta disponible para el cliente</p>
     <hr>
     <br>
     <div>
-        <!-- horario -->
-        <div>
-            <h4>Horario de atención</h4>
-            <p class="fs-10 text-gray-500">La hora debe ser en formato 24 horas</p>            
-            <div style="display: flex" class="mt-2">
-                <div class="pr-5">
-                    <p >Hora Abre</p>
-                    <input type="time" id="h_ini" name="h_ini" bind:value={itemCarta.hora_ini} required>
-                </div>
-                <div>
-                    <p>Hora Cierra</p>
-                    <input type="time" id="h_fin" name="h_fin" bind:value={itemCarta.hora_fin} required>
-                </div>
-            </div>
-        </div>
-
-        <hr>
-        <!-- dias de atencion -->
-        <div class="mt-5">
-            <h4>Dias de atención</h4>
-            <div class="d-flex">
-                {#each dias_semana as dia}
-                    <div style="display: inline-flex; padding:5px">
-                        <input  type="checkbox" id="checkdia{dia.numdia}" name="dia{dia.numdia}" value="{dia.numdia}" on:change={checkDiaList}>
-                        <label class="pl-1" for="dia{dia.numdia}">{dia.nomdia}</label>
-                    </div>
-                {/each}
-            </div>
-        </div>
-
-        <hr>
         <!-- subir imagen de la carta -->
         <div class="mt-5">
             <div class="flex justify-between">
@@ -161,10 +101,58 @@
                 </div>
             </div>
 
-            <input type="file" id="img_carta" name="img_carta" accept="image/png, image/jpeg">
+            <input type="file" accept="image/png, image/jpeg" bind:files={fileInput}>
         </div>
         
         <Button icon="fa fa-save" color="primary" loader={_loaderStatus} on:click={guardarCarta}>Guardar Cambios</Button>    
     </div>
 
 </div>
+
+<style>
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 22px;
+        flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ef4444;
+        transition: 0.3s;
+        border-radius: 22px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+        background-color: #22c55e;
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(18px);
+    }
+</style>

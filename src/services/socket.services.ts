@@ -1,7 +1,6 @@
 import { io, Socket } from "socket.io-client";
-// import { config } from "dotenv";
-// import { config } from "./config";
 import { PUBLIC_SOCKET_SERVER_URL } from "$env/static/public";
+import { getValueTokenSys } from "./login.services";
 
 type EventCallback = (...args: any[]) => void;
 
@@ -11,6 +10,20 @@ export class SocketClient {
     private eventListeners: Map<string, EventCallback[]> = new Map<string, EventCallback[]>();
 
     constructor(url: string, query = {}) {        
+        if (Object.keys(query).length === 0) {
+            const sede = getValueTokenSys('sede');
+            const org = getValueTokenSys('org');
+            const idorg = org?.idorg_restobar || '';
+            const idsede = sede?.idsede_restobar || '';
+            query = {
+                idorg,
+                idsede,
+                roomId: `${idorg}${idsede}`,
+                isFrontMensajeria: '1',
+                room: 'mensajeria',
+            }
+        }
+
         this.socket = io(url, {
             query
         });
@@ -28,11 +41,9 @@ export class SocketClient {
     }
 
     private onConnect = () => {
-        console.log("Connected to Socket.IO server");
     };
 
     private onDisconnect = () => {
-        console.log("Disconnected from Socket.IO server");
     };
 
     public sendMessage(message: string, payload: any) {

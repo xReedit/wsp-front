@@ -8,7 +8,6 @@
 
     // let mode = 'light';
     setMode('light');
-    console.log('dark ==== >');
 
     function handleModeChange() {
       if ($mode === "light") {
@@ -16,8 +15,6 @@
       } else {
         setMode("light");
       }
-      console.log('mode', $mode);
-
 	  }
 
 </script>

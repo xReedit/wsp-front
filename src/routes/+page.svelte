@@ -1,79 +1,29 @@
 <script lang="ts">
-    import { io } from "socket.io-client";
     import { onMount } from "svelte";
-    import { SocketClient } from "../services/socket.services";
-    
-    // let socket = io("http://localhost:5624", { autoConnect: false, multiplex:false });
+    import { goto } from "$app/navigation";
+    import { getValueToken } from "$root/services/login.services";
+    import Preload from "$root/components/Preload.svelte";
 
-    let respondeSocket = ''
-    let nom_session = ''
-    let session_ini = {
-        value: false,
-        message: 'Incia Session escaneando el codigo QR'
-    }
+    let isLoading = true;
 
-    const socket = SocketClient.getInstance();
-
-    socket.on('message', (data) => {
-            console.log(data);
-            respondeSocket = data;
-    }) 
-
-    socket.on('image_qr_session', (data) => {
-        const imgElement = document.getElementById("imgQR") as HTMLImageElement;
-        imgElement.src = data;
-    })
-
-    socket.on('session_init', (value) => {
-        console.log('session_init,', value);
-        session_ini.value = value
-        session_ini.message = value ? 'Session iniciada' : 'Incia Session escaneando el codigo QR'
-    })
-
-    onMount(async () => {                
-        // initSocket()   
-    })
-
-    function initSocket() {
-        console.log('aaaaa');        
-    }
-
-    function initBot() {
-        const _data = {
-            nameSession: nom_session,  //`session-${Math.floor(Math.random() * 1000)}`
-            infoSede: {
-                infoSede : {
-                    idsede: 13,
-                    nombre: 'El Asador',
-                    telefono: '123456789',
-                    direccion: 'Calle 123',
-                    ciudad: 'Lima',
-                    ruc: '123456789',
-                },
-                listCarta: [],
-                listCanalConsumo: []
-            }
+    onMount(() => {
+        const token = getValueToken('idusuario');
+        if (token) {
+            goto('./panel');
+        } else {
+            isLoading = false;
         }
-        
-        
-
-        socket.sendMessage('init_bot', _data)
-
-    }
-
-    
-
+    })
 </script>
 
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
-<p>{respondeSocket}</p>
-<button on:click={initSocket}>Conectar  </button>
-<button on:click={initBot}>Iniciar Bot  </button>
+<Preload isLoading={isLoading} />
 
-<input type="text" placeholder="Nombre de session" bind:value={nom_session}>
-
-<img id="imgQR" alt="img-qr" hidden={session_ini.value}>
-
-
-<h2>{session_ini.message}</h2>
+{#if !isLoading}
+<div class="flex items-center justify-center h-screen">
+    <div class="text-center">
+        <h1 class="text-2xl font-bold mb-4">Piter ChatBot</h1>
+        <p class="text-gray-500">Panel de administración del chatbot</p>
+        <p class="text-gray-400 text-sm mt-2">Inicie sesión desde el sistema Restobar para acceder</p>
+    </div>
+</div>
+{/if}

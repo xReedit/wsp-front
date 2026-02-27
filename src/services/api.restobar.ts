@@ -1,29 +1,29 @@
 import { getData, postDataJSON } from "./httpClient.services"
 
-const EVENTO = 'chat-bot'
 
-
-export const getCountPedidosBot = async (infoSede: any) => {
+export const getCountPedidosBot = async (infoSede: { idsede_restobar: string | number }) => {
     return await getData('', `count-pedidos-bot/${infoSede.idsede_restobar}`)    
 }
 
-export const bloquearNumeroTelefono = async (idsede: any, telefono: string, info: any) => {
+export const bloquearNumeroTelefono = async (idsede: string | number, telefono: string, info: Record<string, any>) => {
     const dataSend = {
         idsede,
         telefono,
-        info
+        info,
+        bloqueado: true,
     }
     return await postDataJSON('', 'bloquear-telefono', dataSend)
 }
 
-export const desbloquearNumeroTelefono = async (idsede: any, telefono: string) => {
+export const desbloquearNumeroTelefono = async (idsede: string | number, telefono: string) => {
     const dataSend = {
         idsede,
         telefono,
+        bloqueado: false,
     }
     return await postDataJSON('', 'desbloquear-telefono', dataSend)
 }
 
-export const getListNumeroTelefonoBloqueado = async (idsede: any) => {
+export const getListNumeroTelefonoBloqueado = async (idsede: string | number) => {
     return await getData('', `list-telefonos-bloqueados/${idsede}`)
 }
