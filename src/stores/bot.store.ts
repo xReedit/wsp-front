@@ -21,6 +21,7 @@ export const iniciandoSession = writable<boolean>(false)
 export const countPedidosRealizadosBot = writable<number>(0)
 export const newConversation = writable<Partial<Conversacion>>({})
 export const respondeSocket = writable<string>('')
+export const chatbotRun = writable<boolean>(false)
 
 // Estado de mensajería
 export const mensajeriaInstalada = writable<boolean>(false)
@@ -135,6 +136,13 @@ export function sendStopBot(nomSession: string) {
 
 export function getSocketInstance(): SocketClient | null {
     return socket
+}
+
+export function sendRunChatbot(idsede: string, idorg: string, run: number) {
+    if (!socket) return
+    const roomId = `${idorg}${idsede}`
+    socket.sendMessage('run-chatbot', { idsede, idorg, roomId, run })
+    chatbotRun.set(run === 1)
 }
 
 export function pingMensajeria(idorg: string, idsede: string) {

@@ -3,7 +3,7 @@
     import { getValueTokenSys } from '$root/services/login.services'    
     import { fade } from 'svelte/transition'
     import Preload from '$root/components/Preload.svelte';
-    import { getData } from '$root/services/httpClient.services';
+    import { getData, putData } from '$root/services/httpClient.services';
     import Modal from '$root/components/Modal.svelte';
     import ModificarCarta from '$root/components/Modificar.Carta.svelte';
     import { copiarAlPortapapeles } from '$root/services/utils';
@@ -26,7 +26,8 @@
         countPedidosRealizadosBot, newConversation,
         initSocketListeners, sendInitBot, sendUpdateInfoSede, sendStopBot,
         sendUpdateNumberBlocked,
-        mensajeriaInstalada, mensajeriaConectada, mensajeriaVerificando, pingMensajeria
+        mensajeriaInstalada, mensajeriaConectada, mensajeriaVerificando, pingMensajeria,
+        chatbotRun, sendRunChatbot
     } from '$root/stores/bot.store';
 
     // Types
@@ -168,6 +169,9 @@
         listReglasCarta = await getData('chat-bot', `get-reglas-carta/${sedeApi.idsede}/${sedeApi.idorg}`)
         listSeccionMasPiden = await getData('', `get-seccion-mas-piden/${sedeApi.idsede}`)
         
+        // Inicializar estado del chatbot
+        chatbotRun.set(Number(sedeApi.chatbot_run) === 1)
+
         try {            
             if (configDelivery.ciudades === '') {
                 configDelivery.ciudades = `${sedeApi.ciudad.toLowerCase()} ${sedeApi.codigo_postal}`;
@@ -304,6 +308,58 @@
         return true
     }
 
+    function validarAntesDeIniciar(): string[] {
+        const errores: string[] = [];
+
+        const cartaHabilitada = listCarta.filter(x => x.visible_cliente === '1');
+        if (cartaHabilitada.length === 0) {
+            errores.push('Debe tener al menos una carta habilitada');
+        }
+
+        const cartaConImagen = listCarta.filter(x => x.visible_cliente === '1' && x.img_visible === true);
+        if (cartaHabilitada.length > 0 && cartaConImagen.length === 0) {
+            errores.push('Al menos una carta habilitada debe tener una imagen configurada');
+        }
+
+        if (!listHorariosAtencion || listHorariosAtencion.length === 0) {
+            errores.push('Debe configurar al menos un horario de atención');
+        }
+
+        if (!configDelivery.ciudades || configDelivery.ciudades.trim() === '') {
+            errores.push('Debe especificar la ciudad donde opera el negocio');
+        }
+
+        return errores;
+    }
+
+    let erroresConfigChatbot: string[] = [];
+
+    let togglingChatbot = false;
+    async function toggleChatbot() {
+        const newRun = $chatbotRun ? 0 : 1;
+
+        if (newRun === 1) {
+            erroresConfigChatbot = validarAntesDeIniciar();
+            if (erroresConfigChatbot.length > 0) {
+                return;
+            }
+        }
+        erroresConfigChatbot = [];
+
+        const endpoint = newRun === 1 ? 'run' : 'stop';
+        togglingChatbot = true;
+        try {
+            await getData('', `${endpoint}/${sedeApi.idsede}`);
+            sendRunChatbot(sedeApi.idsede, sedeApi.idorg, newRun);
+            sedeApi.chatbot_run = newRun;
+            showToastSwal('success', newRun === 1 ? 'Chatbot activado' : 'Chatbot desactivado', 2000);
+        } catch (error) {
+            showToastSwal('error', 'Error al cambiar estado del chatbot', 3000);
+        } finally {
+            togglingChatbot = false;
+        }
+    }
+
     function handleBloquearTelefono(event: CustomEvent) {
         bloquearNumeroTelefono(infoSede.idsede_restobar, event.detail.telefono, event.detail.bloqueado);
         sendUpdateNumberBlocked(event.detail.telefono, true, sedeApi.idorg, sedeApi.idsede);
@@ -401,11 +457,74 @@
                     <img src="{imagenBot}" alt="img-bot">            
                 </div>
 
+                <!-- Control Chatbot -->
+                <div class="mt-4 ml-3 mr-3">
+                    {#if $chatbotRun}
+                        <div class="bg-green-50 border border-green-300 rounded-lg p-4 text-center">
+                            <div class="flex items-center justify-center gap-2 mb-2">
+                                <span class="relative flex h-3 w-3">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                </span>
+                                <p class="text-sm font-semibold text-green-700">Chatbot en funcionamiento</p>
+                            </div>
+                            <p class="text-xs text-green-600 mb-3">El chatbot está activo y atendiendo a sus clientes por WhatsApp de forma automática.</p>
+                            <button 
+                                type="button"
+                                disabled={togglingChatbot || !$mensajeriaConectada}
+                                on:click={toggleChatbot}
+                                class="btn btn-danger"
+                            >
+                                {#if togglingChatbot}
+                                    <i class="fa fa-spinner fa-spin"></i> Deteniendo...
+                                {:else}
+                                    <i class="fa fa-stop-circle"></i> Detener Chatbot
+                                {/if}
+                            </button>
+                        </div>
+                    {:else}
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+                            <p class="text-sm font-semibold text-gray-600 mb-1">El chatbot está apagado</p>
+                            <p class="text-xs text-gray-500 mb-3">Inicie el chatbot para que comience a responder automáticamente los mensajes de sus clientes por WhatsApp.</p>
+                            <button 
+                                type="button"
+                                disabled={togglingChatbot || !$mensajeriaConectada}
+                                on:click={toggleChatbot}
+                                class="btn btn-success"
+                            >
+                                {#if togglingChatbot}
+                                    <i class="fa fa-spinner fa-spin"></i> Iniciando...
+                                {:else}
+                                    <i class="fa fa-play-circle"></i> Iniciar Chatbot
+                                {/if}
+                            </button>
+                            {#if !$mensajeriaConectada && !$mensajeriaVerificando}
+                                <p class="text-xs text-orange-500 mt-2"><i class="fa fa-exclamation-circle"></i> Conecte WhatsApp primero para poder iniciar el chatbot.</p>
+                            {/if}
+                            {#if erroresConfigChatbot.length > 0}
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-3 text-left">
+                                    <p class="text-xs font-semibold text-red-700 mb-2"><i class="fa fa-exclamation-triangle"></i> Configure lo siguiente antes de iniciar:</p>
+                                    <ul class="list-none space-y-1">
+                                        {#each erroresConfigChatbot as error}
+                                            <li class="text-xs text-red-600 flex items-start gap-1">
+                                                <i class="fa fa-times-circle mt-0.5 flex-shrink-0"></i>
+                                                <span>{error}</span>
+                                            </li>
+                                        {/each}
+                                    </ul>
+                                </div>
+                            {/if}
+                        </div>
+                    {/if}
+                </div>
+
+                {#if !$chatbotRun}
                 <div class="bg-yellow-100 rounded-lg p-3 mt-5 ml-3">
                     <h4>Consejos antes de empezar</h4>
                     <p class="fs-12 text-gray-600">Optimize su carta, verifique que, los nombres de los platos esten sin fallas ortograficas y que no se repitan. Al menos una carta debe estar habilitada y con una imagen para poder compartir.</p>
                 </div>
                 <br>
+                {/if}
 
                 <!-- Estado de mensajería -->
                 <div class="ml-3 mt-2">
@@ -444,7 +563,7 @@
                                 <i class="fa fa-check-circle text-green-600"></i>
                                 <p class="text-sm font-semibold text-green-700">WhatsApp conectado y operando</p>
                             </div>
-                            <p class="text-xs text-green-600 mt-1">El chatbot está atendiendo mensajes de sus clientes automáticamente.</p>
+                            <!-- <p class="text-xs text-green-600 mt-1">El chatbot está atendiendo mensajes de sus clientes automáticamente.</p> -->
                         </div>
                     {/if}
                 </div>

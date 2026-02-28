@@ -143,7 +143,7 @@
         <!-- Horario de trabajo: inputs + botón agregar -->
         <div>
             <p class="text-sm font-medium text-gray-600 mb-1">Horario de trabajo: <span class="font-normal text-gray-400">Ingrese en formato 24hrs</span></p>
-            <div class="flex items-end gap-2 mt-1">
+            <div class="flex items-baseline gap-2 mt-1">
                 <input 
                     type="time" 
                     bind:value={inputDesde} 

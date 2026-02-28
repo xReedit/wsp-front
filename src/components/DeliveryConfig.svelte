@@ -110,6 +110,15 @@
                         <input type="number" bind:value={parametrosCostoDelivery.km_limite} on:change="{guardarCambiosDelivery}">
                     </td>
                 </tr>
+                <tr>
+                    <td>
+                        <p class="font-bold">Tiempo aproximado de entrega</p>
+                        <p class="fs-11 text-gray-500">Tiempo estimado en minutos que tarda la entrega del pedido. Se utiliza para informar al cliente el tiempo aproximado de espera.</p>
+                    </td>
+                    <td>
+                        <input type="number" bind:value={parametrosCostoDelivery.tiempo_aprox_entrega} on:change="{guardarCambiosDelivery}">
+                    </td>
+                </tr>
             </tbody>
         </table>
         <br>

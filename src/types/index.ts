@@ -19,6 +19,7 @@ export interface SedeApi {
     link_carta: string
     metodo_pago_aceptados_chatbot: string
     idusuario: string
+    chatbot_run: number
     [key: string]: any
 }
 
@@ -66,6 +67,7 @@ export interface ParametrosCostoDelivery {
     km_limite: number | null
     costo_fijo: number
     obtener_coordenadas_del_cliente: 'SI' | 'NO'
+    tiempo_aprox_entrega: number | null
 }
 
 export interface UserBot {
