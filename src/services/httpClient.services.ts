@@ -28,15 +28,25 @@ async function handleResponse<T>(response: Response, asJson: boolean = true): Pr
     return asJson ? response.json() : response as unknown as T
 }
 
+// Timeout de red: sin esto, una consulta colgada en el backend dejaba el
+// Preload abierto para siempre y el panel parecía muerto (había que Ctrl+R).
+const FETCH_TIMEOUT_MS = 30000
+
 async function safeFetch<T>(url: string, options: RequestInit, asJson: boolean = true): Promise<T> {
     try {
-        const response = await fetch(url, options)
+        const response = await fetch(url, {
+            ...options,
+            signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+        })
         return await handleResponse<T>(response, asJson)
     } catch (error: any) {
         if (error?.message?.startsWith('Error ')) {
             throw error
         }
-        showToastSwal('error', 'No se pudo conectar con el servidor', 3000)
+        const msg = error?.name === 'TimeoutError'
+            ? 'El servidor tardó demasiado en responder'
+            : 'No se pudo conectar con el servidor'
+        showToastSwal('error', msg, 3000)
         throw error
     }
 }
