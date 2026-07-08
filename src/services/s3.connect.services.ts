@@ -1,38 +1,35 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import Compressor from 'compressorjs';
-import { PUBLIC_AWS_ACCESS_KEY_ID, PUBLIC_AWS_REGION, PUBLIC_AWS_SECRET_ACCESS_KEY, PUBLIC_BUCKET_NAME, PUBLIC_URL_VIEW_BUCKET } from '$env/static/public'
+import { PUBLIC_URL_VIEW_BUCKET } from '$env/static/public'
+import { postDataJSON } from './httpClient.services'
 import { showToastSwal } from './mi.swal'
 
 const MAX_FILE_SIZE = 800 * 1024;
 const MAX_DIMENSION = 1200;
 const MIN_QUALITY = 0.1;
 
-export class S3ImageUploader {    
-    private s3Client: S3Client;
-    private bucketName = PUBLIC_BUCKET_NAME
-
-    constructor() {
-        this.s3Client = new S3Client({
-            region: PUBLIC_AWS_REGION,
-            credentials: {
-                accessKeyId: PUBLIC_AWS_ACCESS_KEY_ID,
-                secretAccessKey: PUBLIC_AWS_SECRET_ACCESS_KEY
-            }
-        });
-    }
+// Sube imágenes de la carta a S3 vía URL prefirmada del backend.
+// Las credenciales AWS ya NO viven en el navegador: el backend firma una URL
+// temporal (60s) que solo permite subir un jpeg a files-bot/.
+export class S3ImageUploader {
 
     async uploadImage(fileName: string, fileData: File): Promise<string> {
         try {
             const _fileData = await this.optimizeImage(fileData);
 
-            const putObjectCommand = new PutObjectCommand({
-                Bucket: this.bucketName,
-                Key: 'files-bot/'+fileName,
-                Body: _fileData,
-                ContentType: 'image/jpeg'
-            });
+            const presign: any = await postDataJSON('', 'presign-upload', { fileName });
+            if (!presign?.success || !presign?.uploadUrl) {
+                throw new Error(presign?.error || 'No se pudo obtener la URL de subida');
+            }
 
-            await this.s3Client.send(putObjectCommand)
+            const rpt = await fetch(presign.uploadUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'image/jpeg' },
+                body: _fileData
+            });
+            if (!rpt.ok) {
+                throw new Error(`Error subiendo a S3: ${rpt.status}`);
+            }
+
             return `${PUBLIC_URL_VIEW_BUCKET}${fileName}`;
         } catch (error) {
             showToastSwal('error', 'Error al subir la imagen', 3000)
@@ -43,7 +40,7 @@ export class S3ImageUploader {
 
     getImageUrl(fileName: string): string {
         return `${PUBLIC_URL_VIEW_BUCKET}${fileName}`;
-    }    
+    }
 
     async optimizeImage(file: File | Blob, quality: number = 0.8): Promise<Blob> {
         return new Promise<Blob>((resolve, reject) => {
@@ -61,7 +58,7 @@ export class S3ImageUploader {
                                 .then(resolve)
                                 .catch(reject);
                         } else {
-                            showToastSwal('warning', 'La imagen es muy grande, se subir\u00e1 con compresi\u00f3n m\u00e1xima', 3000)
+                            showToastSwal('warning', 'La imagen es muy grande, se subirá con compresión máxima', 3000)
                             resolve(result);
                         }
                     }
