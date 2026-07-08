@@ -18,6 +18,7 @@ export interface SedeApi {
     longitude: string
     link_carta: string
     metodo_pago_aceptados_chatbot: string
+    numero_billetera_chatbot?: string | null
     idusuario: string
     chatbot_run: number
     [key: string]: any
