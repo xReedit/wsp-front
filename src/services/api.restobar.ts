@@ -27,3 +27,12 @@ export const desbloquearNumeroTelefono = async (idsede: string | number, telefon
 export const getListNumeroTelefonoBloqueado = async (idsede: string | number) => {
     return await getData('', `list-telefonos-bloqueados/${idsede}`)
 }
+
+// Referencia (nota manual) por cliente: el chatbot la respeta como regla fija.
+export const guardarReferenciaCliente = async (idsede: string | number, telefono: string, referencia: string) => {
+    return await postDataJSON('', 'guardar-referencia-cliente', { idsede, telefono, referencia })
+}
+
+export const getReferenciaCliente = async (idsede: string | number, telefono: string): Promise<{ referencia: string }> => {
+    return await getData('', `get-referencia-cliente/${telefono}/${idsede}`)
+}

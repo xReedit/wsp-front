@@ -1,7 +1,8 @@
 <script lang="ts">  
-  import { getListNumeroTelefonoBloqueado } from '$root/services/api.restobar';
+  import { getListNumeroTelefonoBloqueado, guardarReferenciaCliente, getReferenciaCliente } from '$root/services/api.restobar';
   import { formatearFecha } from '$root/services/utils';
   import { showToastSwal } from '$root/services/mi.swal';
+  import Modal from '$root/components/Modal.svelte';
   import { createEventDispatcher, onMount } from 'svelte';
 
   interface Conversacion {
@@ -88,6 +89,52 @@
   function setActiveTab(tab: 'conversaciones' | 'bloqueados') {
     activeTab = tab;
   }
+
+  // ── Referencia (nota manual) por cliente ──────────────────────────────────
+  let modalRefOpen = false;
+  let refTelefono = '';
+  let refNombre = '';
+  let refTexto = '';
+  let loadingRef = false;
+  let savingRef = false;
+  let buscarTel = '';
+
+  async function abrirReferencia(telefono: string, nombre: string) {
+    if (!telefono) return;
+    refTelefono = telefono;
+    refNombre = nombre || '';
+    refTexto = '';
+    loadingRef = true;
+    modalRefOpen = true;
+    try {
+      const r = await getReferenciaCliente(idsede, telefono);
+      refTexto = r?.referencia || '';
+    } catch (e) {
+      // el toast de error ya lo muestra el httpClient
+    } finally {
+      loadingRef = false;
+    }
+  }
+
+  function abrirReferenciaDesdeBusqueda() {
+    const tel = buscarTel.trim();
+    if (!tel) { showToastSwal('error', 'Escribe un número de teléfono', 2500); return; }
+    abrirReferencia(tel, '');
+  }
+
+  async function guardarReferencia() {
+    if (!refTelefono) return;
+    savingRef = true;
+    try {
+      await guardarReferenciaCliente(idsede, refTelefono, refTexto);
+      showToastSwal('success', refTexto.trim() ? 'Referencia guardada' : 'Referencia eliminada', 2500);
+      modalRefOpen = false;
+    } catch (e) {
+      // toast ya mostrado
+    } finally {
+      savingRef = false;
+    }
+  }
 </script>
 
 <style>
@@ -112,11 +159,23 @@
 
 <div class="p-4">
   {#if activeTab === 'conversaciones'}
+    <!-- Buscar por teléfono: permite ponerle referencia a un cliente aunque no esté activo ahora -->
+    <div class="flex gap-2 mb-3">
+      <input
+        type="text"
+        bind:value={buscarTel}
+        placeholder="Teléfono para agregar/editar referencia"
+        class="flex-1 border rounded px-2 py-1 text-sm"
+        on:keydown={(e) => e.key === 'Enter' && abrirReferenciaDesdeBusqueda()}
+      />
+      <button class="btn btn-sm fs-10" on:click={abrirReferenciaDesdeBusqueda} title="Escribe una nota que el chatbot respetará para este cliente">📝 Referencia</button>
+    </div>
+
     {#if conversaciones.length === 0}
       <p class="text-sm text-gray-400 text-center py-4">Aún no hay clientes interactuando con el chatbot.</p>
     {:else}
       <ul class="space-y-1">
-        {#each conversaciones as conversacion}        
+        {#each conversaciones as conversacion}
           <li class="flex justify-between items-center p-2 border-b-2 text-sm">
             <div class="text-left">
               <p class="font-medium">{conversacion.push_name}</p>
@@ -125,7 +184,8 @@
                 <span class="text-red-500 text-xs font-semibold">Solicita atención humana</span>
               {/if}
             </div>
-            <div class="text-right">
+            <div class="text-right flex gap-1">
+              <button class="btn btn-sm fs-10" on:click={() => abrirReferencia(conversacion.telefono, conversacion.push_name)} title="Nota que el chatbot respetará para este cliente (ej. 'vecino: para llevar = consume en local, sin táper')">📝</button>
               <button class="btn btn-sm btn-danger fs-10" on:click={() => bloquearNumero(conversacion.telefono)} title="Pausar: el chatbot dejará de responder a este número temporalmente">Pausar</button>
             </div>
           </li>
@@ -157,3 +217,35 @@
     {/if}
   {/if}
 </div>
+
+<Modal open={modalRefOpen} title="Referencia del cliente" on:close={() => (modalRefOpen = false)}>
+  <div slot="body" class="w-80 max-w-full">
+    {#if refNombre}
+      <p class="font-medium text-sm">{refNombre}</p>
+    {/if}
+    <p class="text-gray-500 text-xs mb-2">{refTelefono}</p>
+
+    {#if loadingRef}
+      <p class="text-sm text-gray-400 py-4 text-center">Cargando…</p>
+    {:else}
+      <label class="text-xs text-gray-600" for="ref-textarea">
+        Nota que el chatbot respetará como regla fija de este cliente:
+      </label>
+      <textarea
+        id="ref-textarea"
+        bind:value={refTexto}
+        rows="4"
+        placeholder="Ej: vecino del frente. Cuando pide 'para llevar' en realidad consume en el local (le llevamos servido en plato a su casa). No cobrar táper ni delivery."
+        class="w-full border rounded px-2 py-1 text-sm mt-1"
+      ></textarea>
+      <p class="text-[11px] text-gray-400 mt-1">Vacío = borrar la referencia.</p>
+
+      <div class="flex justify-end gap-2 mt-3">
+        <button class="btn btn-sm fs-10" on:click={() => (modalRefOpen = false)} disabled={savingRef}>Cancelar</button>
+        <button class="btn btn-sm btn-success fs-10" on:click={guardarReferencia} disabled={savingRef}>
+          {savingRef ? 'Guardando…' : 'Guardar'}
+        </button>
+      </div>
+    {/if}
+  </div>
+</Modal>
