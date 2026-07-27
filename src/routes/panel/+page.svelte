@@ -12,6 +12,7 @@
     import beep from '$root/static/sound/beep.mp3';
     import { bloquearNumeroTelefono, desbloquearNumeroTelefono } from '$root/services/api.restobar';
     import NumberHandler from '$root/components/Number.Handler.svelte';
+    import SaldoWidget from '$root/components/SaldoWidget.svelte';
 
     // Componentes extraídos
     import CartaConfig from '$root/components/CartaConfig.svelte';
@@ -609,6 +610,12 @@
             {#if $countPedidosRealizadosBot > 0}
                 <div class="bg-green-100 rounded-lg p-3 mt-5 ml-3">
                     <p>Pedidos confirmados por el chat bot: <span class="font-bold fs-20">{$countPedidosRealizadosBot}</span></p>
+                </div>
+            {/if}
+
+            {#if sedeApi?.idsede}
+                <div class="mt-5 ml-3">
+                    <SaldoWidget idsede={sedeApi.idsede} sedeNombre={sedeApi.nombre || ''} />
                 </div>
             {/if}
 
