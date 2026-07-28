@@ -38,7 +38,7 @@
                 {#if saldo.estado === 'corte'}
                     Tu saldo se agotó: el bot dejó de responder a clientes nuevos. Recarga para reactivarlo.
                 {:else}
-                    Saldo agotado — el bot atiende {saldo.graciaMax - saldo.graciaUsadas} conversaciones de cortesía más y luego se detiene.
+                    Saldo agotado — el bot atiende {Math.max(0, saldo.graciaMax - saldo.graciaUsadas)} conversaciones de cortesía más y luego se detiene.
                 {/if}
             </p>
         {:else if advertencia}

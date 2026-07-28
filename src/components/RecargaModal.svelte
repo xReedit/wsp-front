@@ -22,12 +22,19 @@
     let packs: Pack[] = []
     let cargandoPacks = false
     let pagando = false
+    // Evita el loop infinito: sin esta bandera, si el fetch falla o devuelve
+    // [] el bloque reactivo se vuelve a disparar en cada toggle de cargandoPacks.
+    let intentado = false
 
-    $: if (open && !packs.length && !cargandoPacks) {
+    $: if (open && !intentado && !cargandoPacks) {
         cargarPacks()
     }
 
+    // Al cerrar el modal se resetea para que, si se reabre, se reintente una vez.
+    $: if (!open) intentado = false
+
     const cargarPacks = async () => {
+        intentado = true
         cargandoPacks = true
         packs = await getPacksChatbot()
         cargandoPacks = false
