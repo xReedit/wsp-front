@@ -159,18 +159,6 @@
 
 <div class="p-4">
   {#if activeTab === 'conversaciones'}
-    <!-- Buscar por teléfono: permite ponerle referencia a un cliente aunque no esté activo ahora -->
-    <div class="flex gap-2 mb-3">
-      <input
-        type="text"
-        bind:value={buscarTel}
-        placeholder="Teléfono para agregar/editar referencia"
-        class="flex-1 border rounded px-2 py-1 text-sm"
-        on:keydown={(e) => e.key === 'Enter' && abrirReferenciaDesdeBusqueda()}
-      />
-      <button class="btn btn-sm fs-10" on:click={abrirReferenciaDesdeBusqueda} title="Escribe una nota que el chatbot respetará para este cliente">📝 Referencia</button>
-    </div>
-
     {#if conversaciones.length === 0}
       <p class="text-sm text-gray-400 text-center py-4">Aún no hay clientes interactuando con el chatbot.</p>
     {:else}
@@ -192,6 +180,19 @@
         {/each}
       </ul>
     {/if}
+
+    <!-- Buscar por teléfono: permite ponerle referencia a un cliente aunque no esté activo ahora.
+         Va debajo de la lista para no empujar a los clientes activos. -->
+    <div class="flex gap-2 mt-3 pt-3 border-t">
+      <input
+        type="text"
+        bind:value={buscarTel}
+        placeholder="Teléfono para agregar/editar referencia"
+        class="flex-1 border rounded px-2 py-1 text-sm"
+        on:keydown={(e) => e.key === 'Enter' && abrirReferenciaDesdeBusqueda()}
+      />
+      <button class="btn btn-sm fs-10" on:click={abrirReferenciaDesdeBusqueda} title="Escribe una nota que el chatbot respetará para este cliente">📝 Referencia</button>
+    </div>
   {/if}
 
   {#if activeTab === 'bloqueados'}
