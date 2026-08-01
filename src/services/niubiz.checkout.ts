@@ -41,6 +41,7 @@ export interface CheckoutConfig {
     purchaseNumber: string
     amount: number
     sedeNombre?: string
+    logoUrl?: string
 }
 
 /**
@@ -75,6 +76,8 @@ export const abrirCheckoutNiubiz = async (cfg: CheckoutConfig): Promise<string> 
             // Niubiz redirige toda la SPA a esta URL y debe volver al panel.
             timeouturl: window.location.href,
             merchantname: cfg.sedeNombre || 'Recarga chatbot',
+            // Solo si hay logo configurado: pasar '' rompe la imagen del lightbox.
+            ...(cfg.logoUrl ? { merchantlogo: cfg.logoUrl } : {}),
             action: '#', // no usamos form-post: el token llega por `complete`
             complete: (params: any) => {
                 clearTimeout(timeoutId)

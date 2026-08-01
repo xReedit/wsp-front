@@ -59,6 +59,7 @@ export interface InicioPago {
     sessionKey: string
     merchantId: string
     checkoutJsUrl: string
+    logoUrl?: string
 }
 
 /** Saldo de la sede. null = no disponible o sede sin billing → el widget se oculta. */

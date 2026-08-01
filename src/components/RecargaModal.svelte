@@ -101,6 +101,7 @@
                     purchaseNumber: inicio.data.purchaseNumber,
                     amount: inicio.data.amount,
                     sedeNombre,
+                    logoUrl: inicio.data.logoUrl,
                 })
             } catch {
                 // Cerró el checkout sin pagar: sin drama, puede volver a intentar.
