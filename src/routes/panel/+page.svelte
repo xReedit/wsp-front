@@ -54,7 +54,6 @@
     let nom_session = 'demo01'
     let sedeApi: SedeApi = {} as SedeApi
     let userBot: UserBot = {} as UserBot
-    let isShowCostoFijo = false;
 
     let showModalCarta = false
     let cartaModificarSeleted: Carta
@@ -133,10 +132,14 @@
     }
 
     async function getCostosDelivery() {
-        const _confgDelivery: any[] = await getData('', `get-config-delivery/${sedeApi.idsede}`)        
+        const _confgDelivery: any[] = await getData('', `get-config-delivery/${sedeApi.idsede}`)
         configDelivery = _confgDelivery[0]
-        parametrosCostoDelivery = configDelivery.parametros      
-        isShowCostoFijo = parametrosCostoDelivery.obtener_coordenadas_del_cliente === 'NO' ? true : false   
+        parametrosCostoDelivery = configDelivery.parametros
+        // Configs anteriores al campo `modo`: inferir con el criterio histórico
+        // ('NO' = fijo, cualquier otra cosa = variable).
+        if (!parametrosCostoDelivery.modo) {
+            parametrosCostoDelivery.modo = parametrosCostoDelivery.obtener_coordenadas_del_cliente === 'NO' ? 'fijo' : 'variable'
+        }
     }
 
     async function getUserBot() {
@@ -430,7 +433,7 @@
 
             <!-- Configuración delivery -->
             <br> 
-            <DeliveryConfig bind:configDelivery bind:parametrosCostoDelivery bind:isShowCostoFijo />
+            <DeliveryConfig bind:configDelivery bind:parametrosCostoDelivery sedeCoords={{ lat: Number(sedeApi.latitude), lng: Number(sedeApi.longitude) }} />
             
             <!-- Link tienda virtual -->
             <br>            

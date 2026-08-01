@@ -61,7 +61,30 @@ export interface ConfigDelivery {
     [key: string]: any
 }
 
+export type ModoDelivery = 'fijo' | 'variable' | 'zonas'
+
+export interface LatLng {
+    lat: number
+    lng: number
+}
+
+// Geometría que emite el editor de mapa (subset de ZonaDelivery).
+export interface GeometriaZona {
+    tipo: 'poligono' | 'circulo'
+    puntos?: LatLng[] // poligono: anillo abierto, >= 3
+    centro?: LatLng // circulo
+    radio_km?: number // circulo, > 0
+}
+
+// El orden del array de zonas es la prioridad: en solape gana la de menor índice.
+export interface ZonaDelivery extends GeometriaZona {
+    nombre: string
+    costo: number
+    tiempo_aprox_entrega?: number | null
+}
+
 export interface ParametrosCostoDelivery {
+    modo?: ModoDelivery
     km_base: number | null
     km_base_costo: number | null
     km_adicional_costo: number | null
@@ -69,6 +92,7 @@ export interface ParametrosCostoDelivery {
     costo_fijo: number
     obtener_coordenadas_del_cliente: 'SI' | 'NO'
     tiempo_aprox_entrega: number | null
+    zonas?: ZonaDelivery[]
 }
 
 export interface UserBot {
