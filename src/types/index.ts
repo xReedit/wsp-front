@@ -12,6 +12,7 @@ export interface SedeApi {
     idsede: string
     idorg: string
     nombre: string
+    show_chatbot?: string
     ciudad: string
     codigo_postal: string
     latitude: string

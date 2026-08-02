@@ -19,6 +19,7 @@
     import ChannelConfig from '$root/components/ChannelConfig.svelte';
     import PaymentConfig from '$root/components/PaymentConfig.svelte';
     import DeliveryConfig from '$root/components/DeliveryConfig.svelte';
+    import ChatbotLanding from '$root/components/ChatbotLanding.svelte';
     import HorarioConfig from '$root/components/HorarioConfig.svelte';
 
     // Store del bot
@@ -409,7 +410,12 @@
 <div in:fade|global class="m-auto p-5">    
     <Preload isLoading={isPreloadShow}/>    
 
-    {#if isDataLoaded}
+    {#if isDataLoaded && String(sedeApi.show_chatbot) !== '1'}
+    <!-- Sede sin chatbot activo: página de venta con solicitud de activación -->
+    <ChatbotLanding idsede={sedeApi.idsede} nombreSede={infoSede.nombre} />
+    {/if}
+
+    {#if isDataLoaded && String(sedeApi.show_chatbot) === '1'}
     <section class="grid-container">
         <section class="column1">
             <h4>Chat Bot - {infoSede.nombre}</h4>
