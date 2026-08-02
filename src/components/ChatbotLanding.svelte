@@ -7,6 +7,7 @@
     import Modal from '$root/components/Modal.svelte'
     import { postData } from '$root/services/httpClient.services'
     import { showToastSwal } from '$root/services/mi.swal'
+    import imgBot from '$root/static/images/001-robot.png'
 
     export let idsede: number | string
     export let nombreSede = ''
@@ -61,7 +62,10 @@
 </script>
 
 <div class="max-w-3xl mx-auto text-center py-6 px-4">
-    <h2 class="text-2xl font-bold mb-1">🍤 Piter, el chatbot de {nombreSede || 'su restaurante'}</h2>
+    <h2 class="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
+        <img src={imgBot} alt="Piter" class="w-9 h-9 inline-block" />
+        Piter chatbot + IA
+    </h2>
     <p class="text-gray-500 mb-6">Un vendedor que atiende su WhatsApp las 24 horas, toma pedidos sin errores y no pide días libres.</p>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left mb-8">
