@@ -411,8 +411,12 @@
     <Preload isLoading={isPreloadShow}/>    
 
     {#if isDataLoaded && String(sedeApi.show_chatbot) !== '1'}
-    <!-- Sede sin chatbot activo: página de venta con solicitud de activación -->
-    <ChatbotLanding idsede={sedeApi.idsede} nombreSede={infoSede.nombre} />
+    <!-- Sede sin chatbot activo: página de venta con activación autoservicio -->
+    <ChatbotLanding
+        idsede={sedeApi.idsede}
+        nombreSede={infoSede.nombre}
+        on:activado={() => (sedeApi = { ...sedeApi, show_chatbot: '1' })}
+    />
     {/if}
 
     {#if isDataLoaded && String(sedeApi.show_chatbot) === '1'}
@@ -550,9 +554,11 @@
                                 <p class="text-sm font-semibold text-red-700">WhatsApp no disponible</p>
                             </div>
                             <p class="text-xs text-red-600">Para que el chatbot pueda atender a sus clientes, necesita conectar WhatsApp. Instale el servicio de mensajería para comenzar a operar.</p>
-                            <button class="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium">
+                            <!-- Última versión pública en S3 (la publica el workflow release de ws-mensajeria) -->
+                            <a href="https://papaya-comercio-files.s3.us-east-2.amazonaws.com/files/MensajeriaWhatsApp-v2.0.0.exe"
+                               class="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium">
                                 <i class="fa fa-download"></i> Descargar instalador
-                            </button>
+                            </a>
                         </div>
                     {:else if !$mensajeriaConectada}
                         <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-3">

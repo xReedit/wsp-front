@@ -1,18 +1,22 @@
 <script lang="ts">
     // Página de venta del chatbot: se muestra en lugar del panel cuando la sede
-    // tiene show_chatbot='0'. El botón registra la solicitud en api-restobar y
-    // ésta aparece en el dashboard del chatbot-go, desde donde se activa.
-    import { onMount } from 'svelte'
-    import { getData, postData } from '$root/services/httpClient.services'
+    // tiene show_chatbot='0'. Activación autoservicio: el dueño confirma el
+    // cambio al plan full en un diálogo y la activación es inmediata (queda
+    // registrada con fecha/hora en el dashboard del chatbot-go).
+    import { createEventDispatcher } from 'svelte'
+    import Modal from '$root/components/Modal.svelte'
+    import { postData } from '$root/services/httpClient.services'
     import { showToastSwal } from '$root/services/mi.swal'
 
     export let idsede: number | string
     export let nombreSede = ''
 
     const PRECIO = 'S/ 149.90'
+    const dispatch = createEventDispatcher()
 
-    let solicitado = false
-    let enviando = false
+    let modalOpen = false
+    // confirmar → procesando → listo
+    let paso: 'confirmar' | 'procesando' | 'listo' = 'confirmar'
 
     const FEATURES = [
         { icon: '💬', titulo: 'Atiende WhatsApp 24/7', detalle: 'Responde al instante, toma pedidos completos y nunca deja un cliente en visto, ni de madrugada.' },
@@ -25,27 +29,34 @@
         { icon: '🧾', titulo: 'Pedidos directo a su sistema', detalle: 'Cada pedido confirmado entra a su sistema Papaya como cualquier otro: cocina, caja y reparto.' },
     ]
 
-    onMount(async () => {
-        try {
-            const r = await getData('', `solicitud-chatbot/${idsede}`)
-            solicitado = Boolean(r?.solicitado)
-        } catch (e) {
-            // sin estado previo: el botón queda disponible
-        }
-    })
+    function abrirConfirmacion() {
+        paso = 'confirmar'
+        modalOpen = true
+    }
 
-    async function solicitar() {
-        if (enviando || solicitado) return
-        enviando = true
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+    async function confirmarActivacion() {
+        paso = 'procesando'
         try {
-            await postData('', 'solicitar-chatbot', { idsede })
-            solicitado = true
-            showToastSwal('success', '¡Solicitud enviada! Nos pondremos en contacto para activar su chatbot.', 5000)
+            // La espera mínima le da peso a la acción: la activación real toma ms.
+            const [resp] = await Promise.all([
+                postData('', 'activar-chatbot', { idsede }),
+                sleep(2500),
+            ])
+            const json = await (resp as Response).json()
+            if (json?.success === false) throw new Error(json?.error || 'rechazado')
+            paso = 'listo'
         } catch (e) {
-            showToastSwal('error', 'No se pudo enviar la solicitud, intente nuevamente', 4000)
-        } finally {
-            enviando = false
+            modalOpen = false
+            paso = 'confirmar'
+            showToastSwal('error', 'No se pudo activar el chatbot, intente nuevamente', 4000)
         }
+    }
+
+    function comenzar() {
+        modalOpen = false
+        dispatch('activado')
     }
 </script>
 
@@ -70,18 +81,38 @@
         <p class="text-4xl font-bold mb-1">{PRECIO}<span class="text-base font-normal text-gray-500"> /mes</span></p>
         <p class="text-xs text-gray-500 mb-4">Todas las funciones incluidas. Sin instalación adicional: funciona con su sistema Papaya.</p>
 
-        {#if solicitado}
-            <div class="bg-green-100 border border-green-300 rounded-lg px-4 py-3 text-green-700 text-sm font-semibold">
-                ✓ Solicitud enviada — nos pondremos en contacto para la activación
-            </div>
-        {:else}
-            <button class="btn btn-success text-base px-6 py-2" disabled={enviando} on:click={solicitar}>
-                {#if enviando}
-                    <i class="fa fa-spinner fa-spin"></i> Enviando...
-                {:else}
-                    🚀 Solicitar activación
-                {/if}
-            </button>
-        {/if}
+        <button class="btn btn-success text-base px-6 py-2" on:click={abrirConfirmacion}>
+            🚀 Solicitar activación
+        </button>
     </div>
 </div>
+
+<Modal open={modalOpen} title="Activar chatbot · Plan Full" on:close={() => { if (paso !== 'procesando') modalOpen = false }}>
+    <div slot="body" class="w-96 max-w-full text-center">
+        {#if paso === 'confirmar'}
+            <p class="text-sm text-left mb-3">Está por activar el chatbot para <b>{nombreSede || 'su sede'}</b> con el cambio al <b>Plan Full</b>:</p>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
+                <p class="text-3xl font-bold">{PRECIO}<span class="text-sm font-normal text-gray-500"> /mes</span></p>
+                <p class="text-xs text-gray-500 mt-1">Se sumará a su facturación mensual de Papaya a partir de hoy.</p>
+            </div>
+            <p class="text-xs text-gray-500 text-left mb-4">Al confirmar, acepta el cambio de plan y el cobro mensual indicado. El chatbot quedará activo de inmediato.</p>
+            <div class="flex justify-end gap-2">
+                <button class="btn btn-sm fs-10" on:click={() => (modalOpen = false)}>Cancelar</button>
+                <button class="btn btn-sm btn-success fs-10" on:click={confirmarActivacion}>Confirmar y activar</button>
+            </div>
+        {:else if paso === 'procesando'}
+            <div class="py-8">
+                <i class="fa fa-spinner fa-spin text-3xl text-blue-500"></i>
+                <p class="text-sm font-semibold mt-3">Procesando activación…</p>
+                <p class="text-xs text-gray-500 mt-1">Estamos encendiendo su chatbot, un momento por favor.</p>
+            </div>
+        {:else}
+            <div class="py-6">
+                <p class="text-4xl mb-2">🎉</p>
+                <p class="text-base font-bold text-green-700">¡Su chatbot está activo!</p>
+                <p class="text-xs text-gray-500 mt-1 mb-4">Ya puede configurar su carta, horarios y delivery. Recuerde instalar y conectar WhatsApp para empezar a atender.</p>
+                <button class="btn btn-success" on:click={comenzar}>Comenzar a configurar</button>
+            </div>
+        {/if}
+    </div>
+</Modal>
