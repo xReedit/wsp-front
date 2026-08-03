@@ -10,6 +10,12 @@
     // Coordenadas de la sede: centro inicial del mapa de zonas.
     export let sedeCoords: LatLng | null = null;
 
+    // Configs anteriores al campo `resumen_formato`, o si la prop cambia de sede
+    // en caliente: inicializar en 'texto' (default histórico) antes de renderizar.
+    $: if (parametrosCostoDelivery && !parametrosCostoDelivery.resumen_formato) {
+        parametrosCostoDelivery.resumen_formato = 'texto'
+    }
+
     async function guardarCambiosDelivery() {
         try {
             configDelivery.parametros = parametrosCostoDelivery
@@ -31,6 +37,20 @@
 
 <section class="card-1">
     <h4>Costo de entrega -Delivery-</h4>
+
+    <!-- Formato del resumen del pedido (aplica a todos los canales, no solo delivery) -->
+    <div class="mb-4 p-3 border rounded-lg">
+        <p class="font-semibold text-sm mb-2">🧾 Resumen del pedido al cliente</p>
+        <p class="text-xs text-gray-500 mb-2">Cómo recibe el cliente el resumen antes de confirmar: texto plano o imagen tipo ticket (se ve igual en todas las pantallas e incluye su logo).</p>
+        <label class="flex items-center gap-2 mb-1">
+            <input type="radio" bind:group={parametrosCostoDelivery.resumen_formato} value="texto" on:change={guardarCambiosDelivery} name="resumen-formato" class="w-4 h-4">
+            <span class="text-sm">Texto (como siempre)</span>
+        </label>
+        <label class="flex items-center gap-2">
+            <input type="radio" bind:group={parametrosCostoDelivery.resumen_formato} value="imagen" on:change={guardarCambiosDelivery} name="resumen-formato" class="w-4 h-4">
+            <span class="text-sm">Imagen de ticket 🧾</span>
+        </label>
+    </div>
 
     <div class="flex items-center mb-2 mt-2 flex-wrap gap-4">
         <label class="flex items-center text-sm font-medium text-gray-900 gap-2">

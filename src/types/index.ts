@@ -94,6 +94,8 @@ export interface ParametrosCostoDelivery {
     obtener_coordenadas_del_cliente: 'SI' | 'NO'
     tiempo_aprox_entrega: number | null
     zonas?: ZonaDelivery[]
+    // Formato del resumen de pedido por WhatsApp: ticket imagen o texto plano.
+    resumen_formato?: 'texto' | 'imagen'
 }
 
 export interface UserBot {
