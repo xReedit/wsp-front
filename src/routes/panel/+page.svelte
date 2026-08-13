@@ -19,6 +19,7 @@
     import ChannelConfig from '$root/components/ChannelConfig.svelte';
     import PaymentConfig from '$root/components/PaymentConfig.svelte';
     import DeliveryConfig from '$root/components/DeliveryConfig.svelte';
+    import PersonalidadConfig from '$root/components/PersonalidadConfig.svelte';
     import ChatbotLanding from '$root/components/ChatbotLanding.svelte';
     import HorarioConfig from '$root/components/HorarioConfig.svelte';
 
@@ -426,7 +427,11 @@
             <p class="text-sm text-gray-500">El chatbot automatiza la atención al cliente por WhatsApp, ofreciendo respuestas rápidas y precisas las 24/7, mejorando la experiencia del cliente y optimizando el servicio.</p>
             <br>                        
 
+            <!-- Personalidad del bot -->
+            <PersonalidadConfig bind:configDelivery bind:parametrosCostoDelivery />
+
             <!-- Carta -->
+            <br>
             <CartaConfig {listCarta} on:modificar-carta={handleModificarCarta} />
 
             <!-- Horarios de atención -->

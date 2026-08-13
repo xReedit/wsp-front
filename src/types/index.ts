@@ -96,7 +96,18 @@ export interface ParametrosCostoDelivery {
     zonas?: ZonaDelivery[]
     // Formato del resumen de pedido por WhatsApp: ticket imagen o texto plano.
     resumen_formato?: 'texto' | 'imagen'
+    // Voz del bot en esta sede. Las claves son contrato con api-restobar
+    // (services/personalidad.ts) y chatbot-go (internal/prompt/piter.go).
+    personalidad_chatbot?: Personalidad
 }
+
+export type Personalidad =
+    | 'amigable'
+    | 'profesional'
+    | 'directo'
+    | 'achorado'
+    | 'divertido'
+    | 'diplomatico'
 
 export interface UserBot {
     idusuario: string
