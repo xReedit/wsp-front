@@ -20,6 +20,7 @@
     import PaymentConfig from '$root/components/PaymentConfig.svelte';
     import DeliveryConfig from '$root/components/DeliveryConfig.svelte';
     import PersonalidadConfig from '$root/components/PersonalidadConfig.svelte';
+    import ReglasNegocioConfig from '$root/components/ReglasNegocioConfig.svelte';
     import ChatbotLanding from '$root/components/ChatbotLanding.svelte';
     import HorarioConfig from '$root/components/HorarioConfig.svelte';
 
@@ -429,6 +430,10 @@
 
             <!-- Personalidad del bot -->
             <PersonalidadConfig bind:configDelivery bind:parametrosCostoDelivery />
+
+            <!-- Reglas propias del local -->
+            <br>
+            <ReglasNegocioConfig bind:configDelivery bind:parametrosCostoDelivery />
 
             <!-- Carta -->
             <br>

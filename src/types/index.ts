@@ -99,6 +99,9 @@ export interface ParametrosCostoDelivery {
     // Voz del bot en esta sede. Las claves son contrato con api-restobar
     // (services/personalidad.ts) y chatbot-go (internal/prompt/piter.go).
     personalidad_chatbot?: Personalidad
+    // Regla propia del local (máx 200 chars) que el bot respeta al armar el
+    // pedido. Se sanea en api-restobar (services/reglas-negocio.ts).
+    reglas_negocio?: string
 }
 
 export type Personalidad =
