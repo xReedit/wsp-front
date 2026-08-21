@@ -20,6 +20,11 @@
     $: restantes = MAX - texto.length;
     $: aviso = URL_RE.test(texto) ? 'No se permiten enlaces ni páginas web.' : '';
 
+    function quitar() {
+        texto = '';
+        return guardar();
+    }
+
     async function guardar() {
         if (aviso) return showToastSwal('error', aviso, 3000);
         guardando = true;
@@ -36,9 +41,9 @@
     }
 </script>
 
-<section class="card-1">
-    <h4>Reglas de tu local</h4>
-    <p class="text-sm text-gray-500">
+<details class="card-1">
+    <summary class="cursor-pointer select-none"><h4 class="inline">Reglas de tu local</h4></summary>
+    <p class="text-sm text-gray-500 mt-2">
         Una condición propia de tu negocio que el bot respetará al tomar los pedidos. Escríbela como se la explicarías a un mozo nuevo.
         No cambia precios ni el resumen del pedido: eso lo sigue calculando el sistema.
     </p>
@@ -56,12 +61,17 @@
         <span class="text-xs" class:text-red-500={!!aviso} class:text-gray-500={!aviso}>
             {aviso || `${restantes} caracteres disponibles`}
         </span>
-        <button class="btn btn-primary btn-sm" on:click={guardar} disabled={guardando || !!aviso}>
-            {guardando ? 'Guardando...' : 'Guardar'}
-        </button>
+        <div class="flex gap-2">
+            <button class="btn btn-danger btn-sm" on:click={quitar} disabled={guardando || !parametrosCostoDelivery?.reglas_negocio}>
+                Quitar regla
+            </button>
+            <button class="btn btn-primary btn-sm" on:click={guardar} disabled={guardando || !!aviso}>
+                {guardando ? 'Guardando...' : 'Guardar'}
+            </button>
+        </div>
     </div>
 
     <p class="text-xs text-gray-400 mt-2">
-        Déjalo vacío y guarda para quitar la regla. Si un cliente pide algo que la rompe, el bot se lo explica y le propone una alternativa.
+        Si un cliente pide algo que rompe la regla, el bot se lo explica y le propone una alternativa.
     </p>
-</section>
+</details>

@@ -37,9 +37,9 @@
     }
 </script>
 
-<section class="card-1">
-    <h4>Personalidad del bot</h4>
-    <p class="text-sm text-gray-500">Cómo habla tu bot con los clientes de esta sede. Solo cambia el tono y las palabras: el pedido, los precios y el resumen funcionan igual con cualquier voz.</p>
+<details class="card-1">
+    <summary class="cursor-pointer select-none"><h4 class="inline">Personalidad del bot</h4></summary>
+    <p class="text-sm text-gray-500 mt-2">Cómo habla tu bot con los clientes de esta sede. Solo cambia el tono y las palabras: el pedido, los precios y el resumen funcionan igual con cualquier voz.</p>
     <br>
 
     <div class="flex flex-wrap gap-2">
@@ -54,4 +54,4 @@
     </div>
 
     <p class="text-xs text-gray-500 mt-3">{ayudaActual}</p>
-</section>
+</details>
