@@ -41,9 +41,8 @@
     }
 </script>
 
-<details class="card-1">
-    <summary class="cursor-pointer select-none"><h4 class="inline">Reglas de tu local</h4></summary>
-    <p class="text-sm text-gray-500 mt-2">
+<div class="max-w-xl text-left">
+    <p class="text-sm text-gray-500">
         Una condición propia de tu negocio que el bot respetará al tomar los pedidos. Escríbela como se la explicarías a un mozo nuevo.
         No cambia precios ni el resumen del pedido: eso lo sigue calculando el sistema.
     </p>
@@ -74,4 +73,4 @@
     <p class="text-xs text-gray-400 mt-2">
         Si un cliente pide algo que rompe la regla, el bot se lo explica y le propone una alternativa.
     </p>
-</details>
+</div>

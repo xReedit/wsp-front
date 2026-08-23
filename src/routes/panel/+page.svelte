@@ -22,6 +22,10 @@
     import PersonalidadConfig from '$root/components/PersonalidadConfig.svelte';
     import ReglasNegocioConfig from '$root/components/ReglasNegocioConfig.svelte';
     import TipsChatbot from '$root/components/TipsChatbot.svelte';
+
+    // Modales de los botoncitos de config (tips / reglas del local)
+    let modalTips = false;
+    let modalReglas = false;
     import ChatbotLanding from '$root/components/ChatbotLanding.svelte';
     import HorarioConfig from '$root/components/HorarioConfig.svelte';
 
@@ -429,16 +433,27 @@
             <p class="text-sm text-gray-500">El chatbot automatiza la atención al cliente por WhatsApp, ofreciendo respuestas rápidas y precisas las 24/7, mejorando la experiencia del cliente y optimizando el servicio.</p>
             <br>                        
 
-            <!-- Tips para el dueño (estáticos) -->
-            <TipsChatbot />
+            <!-- Botoncitos de config: abren un diálogo cada uno -->
+            <div class="flex justify-end gap-2">
+                <button class="w-10 h-10 border rounded-lg bg-white hover:bg-gray-100 text-lg"
+                        title="Tips para que tu bot venda mejor"
+                        on:click={() => modalTips = true}>💡</button>
+                <button class="w-10 h-10 border rounded-lg bg-white hover:bg-gray-100 text-lg"
+                        title="Reglas de tu local"
+                        on:click={() => modalReglas = true}>📋</button>
+            </div>
 
-            <!-- Personalidad del bot -->
-            <br>
-            <PersonalidadConfig bind:configDelivery bind:parametrosCostoDelivery />
+            <Modal open={modalTips} title="💡 Tips para que tu bot venda mejor" on:close={() => modalTips = false}>
+                <svelte:fragment slot="body">
+                    <TipsChatbot />
+                </svelte:fragment>
+            </Modal>
 
-            <!-- Reglas propias del local -->
-            <br>
-            <ReglasNegocioConfig bind:configDelivery bind:parametrosCostoDelivery />
+            <Modal open={modalReglas} title="Reglas de tu local" on:close={() => modalReglas = false}>
+                <svelte:fragment slot="body">
+                    <ReglasNegocioConfig bind:configDelivery bind:parametrosCostoDelivery />
+                </svelte:fragment>
+            </Modal>
 
             <!-- Carta -->
             <br>
@@ -485,6 +500,9 @@
                 <div style="display: flex; justify-content: center;">
                     <img src="{imagenBot}" alt="img-bot">            
                 </div>
+
+                <!-- Personalidad del bot, debajo de la imagen -->
+                <PersonalidadConfig bind:configDelivery bind:parametrosCostoDelivery />
 
                 <!-- Control Chatbot -->
                 <div class="mt-4 ml-3 mr-3">

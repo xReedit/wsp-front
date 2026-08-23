@@ -37,9 +37,8 @@
     ];
 </script>
 
-<details class="card-1">
-    <summary class="cursor-pointer select-none"><h4 class="inline">💡 Tips para que tu bot venda mejor</h4></summary>
-    <p class="text-sm text-gray-500 mt-2">
+<div class="max-w-xl text-left">
+    <p class="text-sm text-gray-500">
         El bot atiende con los datos que tú cargas. Estos consejos salen de pedidos reales y evitan los malentendidos más comunes.
     </p>
 
@@ -54,4 +53,4 @@
             </li>
         {/each}
     </ul>
-</details>
+</div>
