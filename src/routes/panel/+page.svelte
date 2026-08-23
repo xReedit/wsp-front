@@ -433,14 +433,20 @@
             <p class="text-sm text-gray-500">El chatbot automatiza la atención al cliente por WhatsApp, ofreciendo respuestas rápidas y precisas las 24/7, mejorando la experiencia del cliente y optimizando el servicio.</p>
             <br>                        
 
-            <!-- Botoncitos de config: abren un diálogo cada uno -->
-            <div class="flex justify-end gap-2">
-                <button class="w-10 h-10 border rounded-lg bg-white hover:bg-gray-100 text-lg"
-                        title="Tips para que tu bot venda mejor"
-                        on:click={() => modalTips = true}>💡</button>
-                <button class="w-10 h-10 border rounded-lg bg-white hover:bg-gray-100 text-lg"
-                        title="Reglas de tu local"
-                        on:click={() => modalReglas = true}>📋</button>
+            <!-- Tarjetas de config: abren un diálogo cada una -->
+            <div class="flex justify-end gap-3 flex-wrap">
+                <button class="w-52 text-left border rounded-xl bg-white hover:bg-gray-50 hover:shadow-md transition-shadow p-3"
+                        on:click={() => modalTips = true}>
+                    <span class="text-xl">💡</span>
+                    <p class="text-sm font-semibold mt-1">Tips para tu bot</p>
+                    <p class="text-xs text-gray-500 mt-1">Consejos para que tu bot entienda y venda mejor.</p>
+                </button>
+                <button class="w-52 text-left border rounded-xl bg-white hover:bg-gray-50 hover:shadow-md transition-shadow p-3"
+                        on:click={() => modalReglas = true}>
+                    <span class="text-xl">📋</span>
+                    <p class="text-sm font-semibold mt-1">Reglas de tu local</p>
+                    <p class="text-xs text-gray-500 mt-1">Una condición propia de tu negocio que el bot respetará.</p>
+                </button>
             </div>
 
             <Modal open={modalTips} title="💡 Tips para que tu bot venda mejor" on:close={() => modalTips = false}>
