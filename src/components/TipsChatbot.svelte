@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Modal from '$root/components/Modal.svelte';
     // Tips estáticos para el dueño: cómo cargar los datos para que el bot
     // atienda mejor. Nacen de conversaciones reales donde el bot falló por
     // datos incompletos (ej: cliente pidió "hamburguesa con papas" y el bot
@@ -40,8 +41,7 @@
         },
     ];
 
-    // Video abierto inline (uno a la vez); preload="none" para no bajar los
-    // MP4 con solo abrir el diálogo.
+    // Video en su propio diálogo (encima del de tips).
     let videoAbierto: number | null = null;
 </script>
 
@@ -53,23 +53,28 @@
     <ul class="mt-3 space-y-3">
         {#each tips as tip, i}
             <li class="border-l-2 border-amber-400 pl-3">
-                <p class="text-sm font-semibold">{tip.titulo}</p>
+                <div class="flex items-center justify-between gap-2">
+                    <p class="text-sm font-semibold">{tip.titulo}</p>
+                    {#if tip.video}
+                        <button class="text-xs text-blue-600 hover:underline whitespace-nowrap"
+                                on:click={() => videoAbierto = i}>▶ Mira cómo</button>
+                    {/if}
+                </div>
                 <p class="text-sm text-gray-500">{tip.detalle}</p>
                 {#if tip.ejemplo}
                     <p class="text-xs text-gray-400 mt-1">Ej: {tip.ejemplo}</p>
-                {/if}
-                {#if tip.video}
-                    <button class="text-xs text-blue-600 hover:underline mt-1"
-                            on:click={() => videoAbierto = videoAbierto === i ? null : i}>
-                        {videoAbierto === i ? '✕ Cerrar video' : '▶ Mira cómo'}
-                    </button>
-                    {#if videoAbierto === i}
-                        <!-- svelte-ignore a11y-media-has-caption -->
-                        <video src={tip.video} controls autoplay preload="none"
-                               class="w-full rounded-lg border mt-2"></video>
-                    {/if}
                 {/if}
             </li>
         {/each}
     </ul>
 </div>
+
+{#if videoAbierto !== null}
+    <Modal open={true} title={tips[videoAbierto].titulo} on:close={() => videoAbierto = null}>
+        <svelte:fragment slot="body">
+            <!-- svelte-ignore a11y-media-has-caption -->
+            <video src={tips[videoAbierto].video} controls autoplay
+                   class="rounded-lg border" style="max-width: min(80vw, 720px)"></video>
+        </svelte:fragment>
+    </Modal>
+{/if}
