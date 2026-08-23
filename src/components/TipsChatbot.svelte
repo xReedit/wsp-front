@@ -3,18 +3,22 @@
     // atienda mejor. Nacen de conversaciones reales donde el bot falló por
     // datos incompletos (ej: cliente pidió "hamburguesa con papas" y el bot
     // cobró una porción aparte porque la carta no decía qué incluye el plato).
+    const VIDEOS = 'https://papaya-comercio-files.s3.us-east-2.amazonaws.com/files-bot/capacitacion';
+
     const tips = [
         {
             titulo: 'Describe qué incluye cada plato',
             detalle:
                 'El bot solo sabe lo que tu carta dice. Si tu hamburguesa trae papas o tu pollo viene con ensalada, escríbelo en la descripción del plato. Si no, cuando un cliente pida "hamburguesa con papas" el bot puede cobrarle una porción aparte.',
             ejemplo: 'Hamburguesa clásica — incluye papas fritas y cremas.',
+            video: `${VIDEOS}/descripcion-plato.mp4`,
         },
         {
             titulo: 'Carga las opciones de cada plato',
             detalle:
                 'Si un plato se elige por tamaño, presa, sabor o bebida, regístralo como opciones del plato (con su costo extra si lo tiene). Así el bot pregunta lo justo, en un solo mensaje, y cobra bien los extras.',
             ejemplo: 'Pizza: personal / mediana (+S/10) / familiar (+S/20).',
+            video: `${VIDEOS}/agregar-seleccionables.mp4`,
         },
         {
             titulo: 'Usa nombres de platos como los pide la gente',
@@ -35,6 +39,10 @@
             ejemplo: '',
         },
     ];
+
+    // Video abierto inline (uno a la vez); preload="none" para no bajar los
+    // MP4 con solo abrir el diálogo.
+    let videoAbierto: number | null = null;
 </script>
 
 <div class="max-w-xl text-left">
@@ -43,12 +51,23 @@
     </p>
 
     <ul class="mt-3 space-y-3">
-        {#each tips as tip}
+        {#each tips as tip, i}
             <li class="border-l-2 border-amber-400 pl-3">
                 <p class="text-sm font-semibold">{tip.titulo}</p>
                 <p class="text-sm text-gray-500">{tip.detalle}</p>
                 {#if tip.ejemplo}
                     <p class="text-xs text-gray-400 mt-1">Ej: {tip.ejemplo}</p>
+                {/if}
+                {#if tip.video}
+                    <button class="text-xs text-blue-600 hover:underline mt-1"
+                            on:click={() => videoAbierto = videoAbierto === i ? null : i}>
+                        {videoAbierto === i ? '✕ Cerrar video' : '▶ Mira cómo'}
+                    </button>
+                    {#if videoAbierto === i}
+                        <!-- svelte-ignore a11y-media-has-caption -->
+                        <video src={tip.video} controls autoplay preload="none"
+                               class="w-full rounded-lg border mt-2"></video>
+                    {/if}
                 {/if}
             </li>
         {/each}
