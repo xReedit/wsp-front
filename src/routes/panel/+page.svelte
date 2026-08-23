@@ -434,16 +434,21 @@
             <br>                        
 
             <!-- Tarjetas de config: abren un diálogo cada una -->
-            <div class="flex justify-end gap-3 flex-wrap">
-                <button class="w-52 text-left border rounded-xl bg-white hover:bg-gray-50 hover:shadow-md transition-shadow p-3"
+            <div class="flex justify-start gap-3 flex-wrap">
+                <button class="w-52 text-left border border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:shadow-md transition-shadow p-3"
                         on:click={() => modalTips = true}>
                     <span class="text-xl">💡</span>
                     <p class="text-sm font-semibold mt-1">Tips para tu bot</p>
                     <p class="text-xs text-gray-500 mt-1">Consejos para que tu bot entienda y venda mejor.</p>
                 </button>
-                <button class="w-52 text-left border rounded-xl bg-white hover:bg-gray-50 hover:shadow-md transition-shadow p-3"
+                <button class="w-52 text-left border border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:shadow-md transition-shadow p-3 relative"
                         on:click={() => modalReglas = true}>
                     <span class="text-xl">📋</span>
+                    {#if parametrosCostoDelivery?.reglas_negocio}
+                        <span class="absolute top-3 right-3 flex items-center gap-1 text-xs text-green-600">
+                            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span> activa
+                        </span>
+                    {/if}
                     <p class="text-sm font-semibold mt-1">Reglas de tu local</p>
                     <p class="text-xs text-gray-500 mt-1">Una condición propia de tu negocio que el bot respetará.</p>
                 </button>
@@ -475,7 +480,7 @@
 
             <!-- Tipos de pago -->
             <br>            
-            <PaymentConfig bind:listTiposPago {sedeApi} />
+            <PaymentConfig bind:listTiposPago {sedeApi} bind:configDelivery bind:parametrosCostoDelivery />
 
             <!-- Configuración delivery -->
             <br> 

@@ -102,6 +102,7 @@ export interface ParametrosCostoDelivery {
     // Regla propia del local (máx 200 chars) que el bot respeta al armar el
     // pedido. Se sanea en api-restobar (services/reglas-negocio.ts).
     reglas_negocio?: string
+    titular_billetera_chatbot?: string
 }
 
 export type Personalidad =
