@@ -93,7 +93,7 @@
             <input
                 type="text"
                 maxlength="60"
-                placeholder="Titular (Ej: Dick Ramírez)"
+                placeholder="Titular (Ej: Juan Perez)"
                 bind:value={parametrosCostoDelivery.titular_billetera_chatbot}
             >
             <button class="btn btn-primary" disabled={guardandoBilletera} on:click={guardarNumeroBilletera}>
