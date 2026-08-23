@@ -21,6 +21,7 @@
     import DeliveryConfig from '$root/components/DeliveryConfig.svelte';
     import PersonalidadConfig from '$root/components/PersonalidadConfig.svelte';
     import ReglasNegocioConfig from '$root/components/ReglasNegocioConfig.svelte';
+    import TipsChatbot from '$root/components/TipsChatbot.svelte';
     import ChatbotLanding from '$root/components/ChatbotLanding.svelte';
     import HorarioConfig from '$root/components/HorarioConfig.svelte';
 
@@ -428,7 +429,11 @@
             <p class="text-sm text-gray-500">El chatbot automatiza la atención al cliente por WhatsApp, ofreciendo respuestas rápidas y precisas las 24/7, mejorando la experiencia del cliente y optimizando el servicio.</p>
             <br>                        
 
+            <!-- Tips para el dueño (estáticos) -->
+            <TipsChatbot />
+
             <!-- Personalidad del bot -->
+            <br>
             <PersonalidadConfig bind:configDelivery bind:parametrosCostoDelivery />
 
             <!-- Reglas propias del local -->
