@@ -16,7 +16,12 @@
 
     let guardando = false;
 
-    $: texto = parametrosCostoDelivery?.reglas_negocio ?? '';
+    // Inicializado UNA vez al montar, no con `$:`: dentro del slot del Modal,
+    // el bind: sobre-invalida las props en cada tecleo y una asignación
+    // reactiva re-ejecutaría esto borrando lo que el usuario escribe. El Modal
+    // monta este componente fresco en cada apertura, así que siempre arranca
+    // con el valor guardado vigente.
+    let texto = parametrosCostoDelivery?.reglas_negocio ?? '';
     $: restantes = MAX - texto.length;
     $: aviso = URL_RE.test(texto) ? 'No se permiten enlaces ni páginas web.' : '';
 
