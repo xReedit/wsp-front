@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { putData, postDataJSON } from "$root/services/httpClient.services";
+    import { putData } from "$root/services/httpClient.services";
+    import { PUBLIC_API_KEY } from '$env/static/public';
     import { S3ImageUploader } from "$root/services/s3.connect.services";
     import { createEventDispatcher, onMount } from "svelte";
     import Button from "./Button.svelte";
@@ -42,8 +43,27 @@
         }
     }    
 
+    // Reindexa el tachado de agotados con la imagen nueva. Es best-effort y
+    // TOTALMENTE silencioso: se usa fetch directo y no los helpers del httpClient
+    // porque esos muestran un toast rojo antes de lanzar, y el operador no debe ver
+    // errores de una función que quizá ni tiene activada (carta_tachado en 'off'),
+    // por ejemplo si el panel se despliega antes que el backend. Idempotente en el
+    // backend por el ETag de S3, así que reintentar de más no cuesta nada.
+    function reindexarCartaSilencioso() {
+        try {
+            fetch(`${PUBLIC_API_KEY}/chat-bot/carta-indexar/${itemCarta.idsede}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token') || ''}`
+                },
+                body: '{}'
+            }).catch(() => { /* silencio: el indexado es best-effort */ })
+        } catch { /* silencio */ }
+    }
+
     // guardamos los datos de la carta
-    async function guardarCarta() {        
+    async function guardarCarta() {
         _loaderStatus = 1
         try {
             await subirImagen()
@@ -53,10 +73,7 @@
             
             await putData('chat-bot',`update-carta/${itemCarta.idcategoria}`, itemCarta)
 
-            // Reindexar el tachado de agotados con la imagen nueva. Idempotente
-            // en el backend (por ETag de S3) y falla-abierto: si la sede tiene el
-            // tachado en 'off' no lo necesita, así que un error no debe romper el guardado.
-            try { await postDataJSON('chat-bot', `carta-indexar/${itemCarta.idsede}`, {}) } catch { /* falla-abierto */ }
+            reindexarCartaSilencioso()
 
             showToastSwal('success','Se guardo correctamente')
             dispatch('close')

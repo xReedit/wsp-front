@@ -49,20 +49,38 @@
         showToastSwal('error', mensaje, 3000)
     }
 
+    // Valor confirmado por el servidor: contra esto se revierte si el PUT falla.
+    let modoGuardado: ParametrosCostoDelivery['carta_tachado'] = parametrosCostoDelivery?.carta_tachado ?? 'off'
+
     async function guardarFlag() {
         // bind:group ya escribió el valor en el prop. Se lee del prop y NO de
         // `modoActivo`: las declaraciones reactivas recién se recalculan en el
         // siguiente flush, así que acá todavía tendrían el valor anterior.
-        const activo = parametrosCostoDelivery.carta_tachado !== 'off'
+        const elegido = parametrosCostoDelivery.carta_tachado
+        const previo = modoGuardado
         try {
             configDelivery.parametros = parametrosCostoDelivery
-            await putData('', `update-config-delivery/${configDelivery.idsede_costo_delivery}`, configDelivery)
+            const res: any = await putData('', `update-config-delivery/${configDelivery.idsede_costo_delivery}`, configDelivery)
+            // putData devuelve el Response crudo (no lo parsea): se valida el status.
+            if (res?.status && res.status !== 200) throw new Error(`Error ${res.status}`)
+            modoGuardado = elegido
             previewUrl = ''
             // Al encender por primera vez: leer la carta (OCR) para tener el listado.
-            if (activo && !indice) await indexar()
+            if (elegido !== 'off' && !indice) await indexar()
         } catch (error) {
+            // El radio no puede quedar mostrando un modo que el servidor no guardó:
+            // el bot seguiría mandando el link y los agotados marcados no se verían.
+            parametrosCostoDelivery.carta_tachado = previo
             avisarError(error, 'Error al guardar la configuración de la carta')
         }
+    }
+
+    // El índice llega de un JSON en S3: nunca se confía en su forma. Sin un array
+    // `lineas` se trata como "sin índice" (se ofrece releer la carta) en vez de
+    // reventar las reactivas y tumbar toda la sección del panel.
+    function indiceValido(respuesta: any): IndiceCarta | null {
+        const idx = respuesta?.indice
+        return idx && Array.isArray(idx.lineas) ? idx as IndiceCarta : null
     }
 
     // GET del índice vigente: barato y sin efectos (no regenera la imagen).
@@ -70,7 +88,7 @@
         cargando = true
         try {
             const r: any = await getData('', `carta-indice/${idsede}`)
-            indice = r?.indice ?? null
+            indice = indiceValido(r)
         } catch (error) {
             indice = null
             avisarError(error, 'No se pudo leer el índice de la carta')
@@ -84,7 +102,7 @@
         cargando = true
         try {
             const r: any = await postDataJSON('', `carta-indexar/${idsede}`, {})
-            indice = r?.indice ?? null
+            indice = indiceValido(r)
             // 200 con success:false / indice null = falla-abierto del backend
             // (sin imagen de carta, sin key de Vision o S3 caído).
             if (!indice) showToastSwal('error', 'No se pudo leer la carta. ¿Ya subiste la imagen de la carta?', 4000)
