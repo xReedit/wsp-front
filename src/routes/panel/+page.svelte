@@ -16,6 +16,7 @@
 
     // Componentes extraídos
     import CartaConfig from '$root/components/CartaConfig.svelte';
+    import CartaTachadoConfig from '$root/components/CartaTachadoConfig.svelte';
     import ChannelConfig from '$root/components/ChannelConfig.svelte';
     import PaymentConfig from '$root/components/PaymentConfig.svelte';
     import DeliveryConfig from '$root/components/DeliveryConfig.svelte';
@@ -469,6 +470,10 @@
             <!-- Carta -->
             <br>
             <CartaConfig {listCarta} on:modificar-carta={handleModificarCarta} />
+
+            <!-- Tachado de platos agotados sobre la imagen de la carta -->
+            <br>
+            <CartaTachadoConfig bind:configDelivery bind:parametrosCostoDelivery idsede={sedeApi.idsede} />
 
             <!-- Horarios de atención -->
             <br>

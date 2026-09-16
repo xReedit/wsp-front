@@ -96,6 +96,10 @@ export interface ParametrosCostoDelivery {
     zonas?: ZonaDelivery[]
     // Formato del resumen de pedido por WhatsApp: ticket imagen o texto plano.
     resumen_formato?: 'texto' | 'imagen'
+    // Tachado de platos agotados sobre la imagen de la carta: off (enviar link,
+    // comportamiento histórico), manual (el local marca los agotados en el panel)
+    // o auto (según el stock del día). Ausente = 'off'.
+    carta_tachado?: 'off' | 'manual' | 'auto'
     // Voz del bot en esta sede. Las claves son contrato con api-restobar
     // (services/personalidad.ts) y chatbot-go (internal/prompt/piter.go).
     personalidad_chatbot?: Personalidad

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { putData } from "$root/services/httpClient.services";
+    import { putData, postDataJSON } from "$root/services/httpClient.services";
     import { S3ImageUploader } from "$root/services/s3.connect.services";
     import { createEventDispatcher, onMount } from "svelte";
     import Button from "./Button.svelte";
@@ -51,8 +51,13 @@
             delete itemCarta.nom_dias
             delete itemCarta.img_visible
             
-            await putData('chat-bot',`update-carta/${itemCarta.idcategoria}`, itemCarta)        
-            
+            await putData('chat-bot',`update-carta/${itemCarta.idcategoria}`, itemCarta)
+
+            // Reindexar el tachado de agotados con la imagen nueva. Idempotente
+            // en el backend (por ETag de S3) y falla-abierto: si la sede tiene el
+            // tachado en 'off' no lo necesita, así que un error no debe romper el guardado.
+            try { await postDataJSON('chat-bot', `carta-indexar/${itemCarta.idsede}`, {}) } catch { /* falla-abierto */ }
+
             showToastSwal('success','Se guardo correctamente')
             dispatch('close')
         } catch (error) {
