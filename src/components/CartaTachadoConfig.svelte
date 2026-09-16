@@ -50,12 +50,16 @@
     }
 
     async function guardarFlag() {
+        // bind:group ya escribió el valor en el prop. Se lee del prop y NO de
+        // `modoActivo`: las declaraciones reactivas recién se recalculan en el
+        // siguiente flush, así que acá todavía tendrían el valor anterior.
+        const activo = parametrosCostoDelivery.carta_tachado !== 'off'
         try {
             configDelivery.parametros = parametrosCostoDelivery
             await putData('', `update-config-delivery/${configDelivery.idsede_costo_delivery}`, configDelivery)
             previewUrl = ''
             // Al encender por primera vez: leer la carta (OCR) para tener el listado.
-            if (modoActivo && !indice) await indexar()
+            if (activo && !indice) await indexar()
         } catch (error) {
             avisarError(error, 'Error al guardar la configuración de la carta')
         }
