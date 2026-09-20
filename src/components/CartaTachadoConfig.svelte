@@ -22,6 +22,9 @@
     let cargando = false;
     let guardando = false;
     let previewUrl = '';
+    // El tachado es solo para cartas cortas (menú del día). Si el backend responde
+    // motivo 'carta_demasiado_larga', acá se guarda el aviso para el operador.
+    let avisoCartaLarga = '';
 
     // Sedes configuradas antes de esta opción (o cambio de sede en caliente):
     // arrancar en 'off' (comportamiento histórico: se envía el link de la carta).
@@ -103,10 +106,16 @@
         try {
             const r: any = await postDataJSON('', `carta-indexar/${idsede}`, {})
             indice = indiceValido(r)
-            // 200 con success:false / indice null = falla-abierto del backend
-            // (sin imagen de carta, sin key de Vision o S3 caído).
-            if (!indice) showToastSwal('error', 'No se pudo leer la carta. ¿Ya subiste la imagen de la carta?', 4000)
-            else previewUrl = ''
+            avisoCartaLarga = ''
+            if (!indice && r?.motivo === 'carta_demasiado_larga') {
+                // Carta con demasiados platos: la función queda desactivada para esa
+                // imagen y el bot manda el link normal. No es un error del operador.
+                avisoCartaLarga = `Tu carta tiene ${r?.lineas ?? 'muchas'} líneas de texto y el tachado automático funciona con cartas cortas (hasta ${r?.max ?? 40} líneas, tipo menú del día). El bot seguirá enviando el link de la carta como siempre.`
+            } else if (!indice) {
+                // 200 con success:false / indice null = falla-abierto del backend
+                // (sin imagen de carta, sin key de Vision o S3 caído).
+                showToastSwal('error', 'No se pudo leer la carta. ¿Ya subiste la imagen de la carta?', 4000)
+            } else previewUrl = ''
         } catch (error) {
             avisarError(error, 'Error al leer la carta')
         }
@@ -213,7 +222,11 @@
                     <img src={previewUrl} alt="Vista previa de la carta con los agotados tachados" class="mt-2 max-w-full rounded border">
                 {/if}
             {:else}
-                <p class="fs-12 text-gray-500 mb-1">Todavía no se ha leído la imagen de tu carta.</p>
+                {#if avisoCartaLarga}
+                    <p class="fs-12 text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-1">{avisoCartaLarga}</p>
+                {:else}
+                    <p class="fs-12 text-gray-500 mb-1">Todavía no se ha leído la imagen de tu carta.</p>
+                {/if}
                 <button class="btn btn-sm btn-primary" on:click={indexar} disabled={cargando}>Leer carta</button>
             {/if}
         </div>
