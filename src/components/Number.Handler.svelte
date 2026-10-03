@@ -1,5 +1,5 @@
 <script lang="ts">  
-  import { getListNumeroTelefonoBloqueado, guardarReferenciaCliente, getReferenciaCliente } from '$root/services/api.restobar';
+  import { getListNumeroTelefonoBloqueado, guardarReferenciaCliente, getReferenciaCliente, getReferenciasCliente, type ReferenciaCliente } from '$root/services/api.restobar';
   import { formatearFecha } from '$root/services/utils';
   import { showToastSwal } from '$root/services/mi.swal';
   import Modal from '$root/components/Modal.svelte';
@@ -24,7 +24,10 @@
 
   let conversaciones: Conversacion[] = [];
   let numerosBloqueados: Conversacion[] = [];
-  let activeTab: 'conversaciones' | 'bloqueados' = 'conversaciones';
+  let activeTab: 'conversaciones' | 'bloqueados' | 'referencias' = 'conversaciones';
+  // null = aún no cargado (se pide al abrir la pestaña, no al montar el panel)
+  let referencias: ReferenciaCliente[] | null = null;
+  let cargandoReferencias = false;
 
   // Función para agregar una nueva conversación
   function agregarConversacion(nuevaConversacion: Conversacion) {
@@ -86,8 +89,21 @@
     }
   }
 
-  function setActiveTab(tab: 'conversaciones' | 'bloqueados') {
+  function setActiveTab(tab: 'conversaciones' | 'bloqueados' | 'referencias') {
     activeTab = tab;
+    if (tab === 'referencias' && referencias === null) cargarReferencias();
+  }
+
+  async function cargarReferencias() {
+    cargandoReferencias = true;
+    try {
+      referencias = await getReferenciasCliente(idsede);
+    } catch (e) {
+      referencias = [];
+      // el toast de error ya lo muestra el httpClient
+    } finally {
+      cargandoReferencias = false;
+    }
   }
 
   // ── Referencia (nota manual) por cliente ──────────────────────────────────
@@ -129,6 +145,7 @@
       await guardarReferenciaCliente(idsede, refTelefono, refTexto);
       showToastSwal('success', refTexto.trim() ? 'Referencia guardada' : 'Referencia eliminada', 2500);
       modalRefOpen = false;
+      if (referencias !== null) cargarReferencias(); // refrescar la pestaña si ya se abrió
     } catch (e) {
       // toast ya mostrado
     } finally {
@@ -150,9 +167,15 @@
       <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">{conversaciones.length}</span>
     </div>
     <div class="cursor-pointer py-2 px-2" class:active-tab={activeTab === 'bloqueados'} on:click={() => setActiveTab('bloqueados')}>
-      Pausados       
-      <span class="inline-flex items-center rounded-md bg-pink-50 px-2 py-1 text-xs font-medium text-pink-700 ring-1 ring-inset ring-pink-700/10">{numerosBloqueados.length}</span>      
+      Pausados
+      <span class="inline-flex items-center rounded-md bg-pink-50 px-2 py-1 text-xs font-medium text-pink-700 ring-1 ring-inset ring-pink-700/10">{numerosBloqueados.length}</span>
     </div>
+    <button type="button" class="cursor-pointer py-2 px-2" class:active-tab={activeTab === 'referencias'} aria-pressed={activeTab === 'referencias'} on:click={() => setActiveTab('referencias')}>
+      Con referencia
+      {#if referencias !== null}
+        <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">{referencias.length}</span>
+      {/if}
+    </button>
   </div>
 </nav>
 <hr>
@@ -212,6 +235,26 @@
             <div class="text-right">
               <button class="btn btn-sm btn-success fs-10" on:click={() => desbloquearNumero(bloqueado.telefono)} title="Habilitar: el chatbot volverá a responder a este número">Habilitar</button>
             </div>
+          </li>
+        {/each}
+      </ul>
+    {/if}
+  {/if}
+
+  {#if activeTab === 'referencias'}
+    {#if cargandoReferencias}
+      <p class="text-sm text-gray-400 text-center py-4">Cargando…</p>
+    {:else if !referencias || referencias.length === 0}
+      <p class="text-sm text-gray-400 text-center py-4">Ningún cliente tiene referencia todavía.</p>
+    {:else}
+      <ul class="space-y-1">
+        {#each referencias as r (r.telefono)}
+          <li class="flex justify-between items-start gap-2 p-2 border-b-2 text-sm">
+            <div class="text-left min-w-0">
+              <p class="font-medium">{r.telefono}</p>
+              <p class="text-gray-500 text-xs truncate" title={r.referencia}>{r.referencia}</p>
+            </div>
+            <button class="btn btn-sm fs-10 shrink-0" on:click={() => abrirReferencia(r.telefono, '')} title="Editar o borrar la referencia de este cliente">📝 Editar</button>
           </li>
         {/each}
       </ul>

@@ -36,3 +36,10 @@ export const guardarReferenciaCliente = async (idsede: string | number, telefono
 export const getReferenciaCliente = async (idsede: string | number, telefono: string): Promise<{ referencia: string }> => {
     return await getData('', `get-referencia-cliente/${telefono}/${idsede}`)
 }
+
+export type ReferenciaCliente = { telefono: string; referencia: string; updated_at: string }
+
+// Todos los clientes con nota de la sede (requiere sesión: el httpClient manda el Bearer).
+export const getReferenciasCliente = async (idsede: string | number): Promise<ReferenciaCliente[]> => {
+    return await getData('', `referencias-cliente/${idsede}`)
+}
