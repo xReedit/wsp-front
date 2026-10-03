@@ -89,6 +89,11 @@
     }
   }
 
+  // Solo para mostrar: WhatsApp a veces manda "51988938939:0" (":0" = dispositivo).
+  // El valor crudo se sigue usando para pausar, porque así lo compara la app de
+  // Mensajería de cada PC (que se actualiza a mano).
+  const telefonoVisible = (tel: string) => String(tel ?? '').split('@')[0].split(':')[0];
+
   function setActiveTab(tab: 'conversaciones' | 'bloqueados' | 'referencias') {
     activeTab = tab;
     if (tab === 'referencias' && referencias === null) cargarReferencias();
@@ -171,7 +176,7 @@
       <span class="inline-flex items-center rounded-md bg-pink-50 px-2 py-1 text-xs font-medium text-pink-700 ring-1 ring-inset ring-pink-700/10">{numerosBloqueados.length}</span>
     </div>
     <button type="button" class="cursor-pointer py-2 px-2" class:active-tab={activeTab === 'referencias'} aria-pressed={activeTab === 'referencias'} on:click={() => setActiveTab('referencias')}>
-      Con referencia
+      Referenciados
       {#if referencias !== null}
         <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">{referencias.length}</span>
       {/if}
@@ -190,7 +195,7 @@
           <li class="flex justify-between items-center p-2 border-b-2 text-sm">
             <div class="text-left">
               <p class="font-medium">{conversacion.push_name}</p>
-              <p class="text-gray-500">{conversacion.telefono}</p>
+              <p class="text-gray-500">{telefonoVisible(conversacion.telefono)}</p>
               {#if conversacion.request_human_attention}
                 <span class="text-red-500 text-xs font-semibold">Solicita atención humana</span>
               {/if}
@@ -227,7 +232,7 @@
           <li class="flex justify-between items-center p-2 border-b-2 text-sm">
             <div class="text-left">
               <p class="font-medium">{bloqueado.push_name}</p>
-              <p class="text-gray-500">{bloqueado.telefono}</p>            
+              <p class="text-gray-500">{telefonoVisible(bloqueado.telefono)}</p>
               {#if bloqueado.fecha_pausa}
                 <span class="text-xs text-red-500">Pausado desde {bloqueado.fecha_pausa}</span>
               {/if}
